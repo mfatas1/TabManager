@@ -1,33 +1,48 @@
 import { Handle, Position } from 'reactflow';
 
 // Custom node component for React Flow
-// Styled to match the app's design system via CSS classes
+// Styled to match the app's indigo/dark design system
 export default function LinkNode({ data, selected }) {
   return (
-    <div className={`graph-node ${selected ? 'graph-node-selected' : ''}`}>
+    <div 
+      className={`
+        rounded-xl border px-4 py-3 max-w-[260px]
+        bg-[#1e2433] shadow-lg
+        font-sans transition-all cursor-pointer
+        ${selected 
+          ? 'border-indigo-500 ring-2 ring-indigo-500/30' 
+          : 'border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/5'
+        }
+      `}
+    >
       {/* Source handle - for outgoing edges */}
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: 'var(--accent)' }}
+        className="!bg-indigo-500 !border-indigo-400"
       />
       {/* Target handle - for incoming edges */}
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: 'var(--accent)' }}
+        className="!bg-indigo-500 !border-indigo-400"
       />
 
-      <div className="graph-node-title">{data.label}</div>
+      <div className="text-xs font-semibold text-slate-200 leading-snug line-clamp-2">
+        {data.label}
+      </div>
       {data.tags && data.tags.length > 0 && (
-        <div className="graph-node-tags">
+        <div className="flex flex-wrap gap-1 mt-2">
           {data.tags.slice(0, 3).map((tag, idx) => (
-            <span key={idx} className="graph-node-tag">
+            <span 
+              key={idx} 
+              className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 text-slate-400"
+            >
               {typeof tag === 'string' ? tag : tag.name}
             </span>
           ))}
           {data.tags.length > 3 && (
-            <span className="graph-node-tag graph-node-tag-more">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 text-slate-500">
               +{data.tags.length - 3}
             </span>
           )}

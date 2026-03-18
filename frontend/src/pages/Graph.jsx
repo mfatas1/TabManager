@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import ReactFlow, { Controls, Background, useNodesState, useEdgesState } from 'reactflow';
-import 'reactflow/dist/style.css';  // important, don't forget this or it will look broken
+import 'reactflow/dist/style.css';
 import { useLinks } from '../hooks/useLinks';
 import { buildGraphData } from '../utils/graphTransform';
 import { applyForceLayout } from '../utils/forceLayout';
 import LinkNode from '../components/LinkNode';
-import './Graph.css';
+import { X, ExternalLink, Tag, Calendar } from 'lucide-react';
 
 // Define node types outside component to avoid re-renders
 const nodeTypes = { linkNode: LinkNode };
@@ -17,7 +17,6 @@ export default function Graph() {
   const [selectedLink, setSelectedLink] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
   
-  // Memoize nodeTypes to ensure it's stable across renders
   const stableNodeTypes = useMemo(() => nodeTypes, []);
 
   // Collect all available broad tags for filtering
@@ -35,12 +34,9 @@ export default function Graph() {
     return Array.from(tagSet).sort();
   }, [links]);
 
-  // Transform links into graph data whenever links or filters change
-  // and apply a force-directed layout so related clusters group together
+  // Transform links into graph data
   useEffect(() => {
     const updateGraph = async () => {
-      // Apply tag filter at the link level so only nodes/edges
-      // with the selected tag are included in the graph
       const filteredLinks = selectedTag
         ? links.filter((link) =>
             (link.tags || []).some((tag) => {
@@ -65,7 +61,6 @@ export default function Graph() {
     updateGraph();
   }, [links, selectedTag, setNodes, setEdges]);
 
-  // Handle tag filter click (toggle on/off)
   const handleTagClick = (tagName) => {
     setSelectedTag((current) => (current === tagName ? null : tagName));
   };
@@ -74,16 +69,12 @@ export default function Graph() {
     setSelectedTag(null);
   };
 
-  // Handle node click - open side panel with link details
-  // Right-click or Ctrl+click opens in new tab
   const onNodeClick = (event, node) => {
     if (event.ctrlKey || event.metaKey || event.button === 2) {
-      // Ctrl/Cmd click or right click - open in new tab
       if (node.data.url) {
         window.open(node.data.url, '_blank');
       }
     } else {
-      // Regular click - open side panel
       const link = links.find(l => String(l.id) === node.id);
       if (link) {
         setSelectedLink(link);
@@ -91,75 +82,81 @@ export default function Graph() {
     }
   };
 
-  // Close side panel
   const closePanel = () => {
     setSelectedLink(null);
   };
 
   if (loading) {
     return (
-      <div className="graph-container">
-        <div className="loading">Loading graph...</div>
+      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
+        <div className="text-slate-400">Loading graph...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="graph-container">
-        <div className="error">Error loading graph: {error}</div>
+      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
+        <div className="text-red-400">Error loading graph: {error}</div>
       </div>
     );
   }
 
   if (links.length === 0) {
     return (
-      <div className="graph-container">
-        <div className="empty-state">
-          No links to display. Add some links to see the graph!
+      <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
+        <div className="text-center">
+          <div className="size-16 mx-auto mb-6 rounded-full bg-indigo-500/10 flex items-center justify-center">
+            <Tag className="size-8 text-indigo-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">No links to display</h2>
+          <p className="text-slate-400">Add some links to see the graph!</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="graph-container">
+    <div className="min-h-screen bg-[#0f1117] flex flex-col">
       {/* Tag Filters */}
-      <div className="graph-filters">
-        <div className="graph-filters-header">
-          <span className="graph-filters-title">Filter by tag</span>
-          {selectedTag && (
-            <button
-              type="button"
-              className="graph-filters-clear"
-              onClick={clearTagFilter}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-        <div className="graph-filters-tags">
-          {availableTags.length === 0 && (
-            <span className="graph-filters-empty">
-              No tags available yet.
-            </span>
-          )}
-          {availableTags.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => handleTagClick(tag)}
-              className={`graph-tag-pill ${
-                selectedTag === tag ? 'graph-tag-pill-active' : ''
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
+      <div className="px-6 py-4 border-b border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter by tag</span>
+            {selectedTag && (
+              <button
+                type="button"
+                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                onClick={clearTagFilter}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {availableTags.length === 0 && (
+              <span className="text-sm text-slate-500">No tags available yet.</span>
+            )}
+            {availableTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleTagClick(tag)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  selectedTag === tag
+                    ? 'bg-indigo-500 text-white border-indigo-500'
+                    : 'bg-white/5 text-slate-400 border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:text-indigo-300'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className={`graph-wrapper ${selectedLink ? 'graph-wrapper-with-panel' : ''}`}>
+      {/* Graph */}
+      <div className={`flex-1 transition-all ${selectedLink ? 'mr-[400px]' : ''}`}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -168,89 +165,104 @@ export default function Graph() {
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           fitView
+          className="bg-[#0f1117]"
         >
-          <Controls />      {/* zoom in/out/fit buttons in the corner */}
-          <Background variant="dots" gap={16} size={1} />    {/* dotted background using border color */}
+          <Controls className="!bg-[#1e2433] !border-white/10 !rounded-lg [&>button]:!bg-[#1e2433] [&>button]:!border-white/10 [&>button]:!text-slate-400 [&>button:hover]:!bg-indigo-500/10" />
+          <Background variant="dots" gap={20} size={1} color="rgba(148, 163, 184, 0.1)" />
         </ReactFlow>
       </div>
       
       {/* Side Panel */}
       {selectedLink && (
         <>
-          <div className="side-panel-overlay" onClick={closePanel}></div>
-          <div className="side-panel">
-            <div className="side-panel-header">
-              <h2>Link Details</h2>
-              <button className="side-panel-close" onClick={closePanel} title="Close">
-                ×
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200" 
+            onClick={closePanel}
+          />
+          <div className="fixed top-0 right-0 w-[400px] h-full bg-[#0d0f16] border-l border-white/5 z-50 flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-[#0f1117]">
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Link Details</h2>
+              <button 
+                className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors" 
+                onClick={closePanel}
+              >
+                <X className="size-5" />
               </button>
             </div>
             
-            <div className="side-panel-content">
-              <div className="side-panel-section">
-                <h3>{selectedLink.title || 'Untitled'}</h3>
-              </div>
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <h3 className="text-lg font-semibold text-white leading-snug mb-6">
+                {selectedLink.title || 'Untitled'}
+              </h3>
               
-              <div className="side-panel-section">
-                <label>URL</label>
-                <a 
-                  href={selectedLink.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="side-panel-url"
-                >
-                  {selectedLink.url}
-                </a>
-              </div>
-              
-              {selectedLink.summary && (
-                <div className="side-panel-section">
-                  <label>Summary</label>
-                  <p className="side-panel-summary">{selectedLink.summary}</p>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">URL</label>
+                  <a 
+                    href={selectedLink.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 break-all transition-colors"
+                  >
+                    <ExternalLink className="size-4 flex-shrink-0" />
+                    {selectedLink.url}
+                  </a>
                 </div>
-              )}
-              
-              {(() => {
-                const specificTags = selectedLink.tags 
-                  ? selectedLink.tags.filter(tag => {
-                      const tagObj = typeof tag === 'string' ? { name: tag } : tag;
-                      return tagObj.tag_type === 'specific' || !tagObj.tag_type; // fallback for old data
-                    })
-                  : [];
-                return specificTags.length > 0 && (
-                  <div className="side-panel-section">
-                    <label>Tags</label>
-                    <div className="side-panel-tags">
-                      {specificTags.map((tag) => {
-                        const tagObj = typeof tag === 'string' ? { name: tag, id: tag } : tag;
-                        return (
-                          <span key={tagObj.id || tagObj.name} className="side-panel-tag">
-                            {tagObj.name}
-                          </span>
-                        );
-                      })}
-                    </div>
+                
+                {selectedLink.summary && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Summary</label>
+                    <p className="text-sm text-slate-400 leading-relaxed">{selectedLink.summary}</p>
                   </div>
-                );
-              })()}
-              
-              <div className="side-panel-section">
-                <label>Saved</label>
-                <p className="side-panel-date">
-                  {new Date(selectedLink.date_saved).toLocaleString()}
-                </p>
+                )}
+                
+                {(() => {
+                  const specificTags = selectedLink.tags 
+                    ? selectedLink.tags.filter(tag => {
+                        const tagObj = typeof tag === 'string' ? { name: tag } : tag;
+                        return tagObj.tag_type === 'specific' || !tagObj.tag_type;
+                      })
+                    : [];
+                  return specificTags.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Tags</label>
+                      <div className="flex flex-wrap gap-2">
+                        {specificTags.map((tag) => {
+                          const tagObj = typeof tag === 'string' ? { name: tag, id: tag } : tag;
+                          return (
+                            <span 
+                              key={tagObj.id || tagObj.name} 
+                              className="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/25"
+                            >
+                              {tagObj.name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Saved</label>
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <Calendar className="size-4" />
+                    {new Date(selectedLink.date_saved).toLocaleString()}
+                  </div>
+                </div>
               </div>
-              
-              <div className="side-panel-actions">
-                <a
-                  href={selectedLink.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="side-panel-button side-panel-button-primary"
-                >
-                  Open Link
-                </a>
-              </div>
+            </div>
+            
+            <div className="px-6 py-5 border-t border-white/5">
+              <a
+                href={selectedLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <ExternalLink className="size-4" />
+                Open Link
+              </a>
             </div>
           </div>
         </>
