@@ -1,6 +1,6 @@
 /**
- * Simple force-directed layout implementation without external dependencies.
- * Uses a basic physics simulation to position nodes based on their connections.
+ * Native force-directed layout - NO external dependencies.
+ * Uses physics simulation to position nodes based on their connections.
  */
 
 /**
@@ -50,7 +50,6 @@ export function applyForceLayout(nodes, edges, width = 800, height = 600) {
 
     // Create simulation nodes with initial positions
     const simNodes = nodes.map((n, i) => {
-      // Spread nodes out in a grid pattern initially
       const cols = Math.ceil(Math.sqrt(nodes.length));
       const initialX = (i % cols) * 200 + Math.random() * 50;
       const initialY = Math.floor(i / cols) * 200 + Math.random() * 50;
@@ -67,15 +66,6 @@ export function applyForceLayout(nodes, edges, width = 800, height = 600) {
     // Create a map for quick lookup
     const nodeMap = new Map(simNodes.map(n => [n.id, n]));
 
-    // Build adjacency list for connected nodes
-    const connections = new Map();
-    edges.forEach(edge => {
-      if (!connections.has(edge.source)) connections.set(edge.source, new Set());
-      if (!connections.has(edge.target)) connections.set(edge.target, new Set());
-      connections.get(edge.source).add(edge.target);
-      connections.get(edge.target).add(edge.source);
-    });
-
     // Simulation parameters
     const iterations = 100;
     const repulsionStrength = 5000;
@@ -87,7 +77,7 @@ export function applyForceLayout(nodes, edges, width = 800, height = 600) {
 
     // Run simulation
     for (let iter = 0; iter < iterations; iter++) {
-      const alpha = 1 - iter / iterations; // Cooling factor
+      const alpha = 1 - iter / iterations;
 
       // Apply repulsion between all nodes
       for (let i = 0; i < simNodes.length; i++) {
