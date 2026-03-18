@@ -1,156 +1,101 @@
 /**
- * Native force-directed layout - NO external dependencies.
- * Uses physics simulation to position nodes based on their connections.
+ * Simple force-directed layout implementation without external dependencies.
+ * Uses a basic physics simulation to position nodes based on their connections.
+ * Native implementation - no d3-force dependency required.
  */
 
-/**
- * Apply a force-directed layout to React Flow nodes based on their connections.
- *
- * @param {Array} nodes - React Flow nodes
- * @param {Array} edges - React Flow edges
- * @param {number} width - Approximate canvas width
- * @param {number} height - Approximate canvas height
- * @returns {Promise<Array>} - Promise resolving to layouted nodes
- */
-export function applyForceLayout(nodes, edges, width = 800, height = 600) {
-  return new Promise((resolve) => {
-    if (!nodes || nodes.length === 0) {
-      resolve(nodes || []);
-      return;
+function computeLayout(nodes, links, width, height, iterations = 50) {
+  // Initialize nodes with random positions if not already set
+  const simNodes = nodes.map(n => ({
+    ...n,
+    x: n.x !== undefined ? n.x : Math.random() * width,
+    y: n.y !== undefined ? n.y : Math.random() * height,
+    vx: 0,
+    vy: 0
+  }));
+
+  // Run simulation iterations
+  for (let i = 0; i < iterations; i++) {
+    const alpha = 1 - i / iterations; // cooling factor
+
+    // Reset forces
+    simNodes.forEach(node => {
+      node.fx = 0;
+      node.fy = 0;
+    });
+
+    // Apply repulsion forces between all nodes (many-body force)
+    for (let j = 0; j < simNodes.length; j++) {
+      for (let k = j + 1; k < simNodes.length; k++) {
+        const dx = simNodes[k].x - simNodes[j].x;
+        const dy = simNodes[k].y - simNodes[j].y;
+        const distance = Math.sqrt(dx * dx + dy * dy) || 0.1;
+        const repulsion = (-250 * alpha) / distance;
+        
+        const fx = (dx / distance) * repulsion;
+        const fy = (dy / distance) * repulsion;
+        
+        simNodes[j].fx -= fx;
+        simNodes[j].fy -= fy;
+        simNodes[k].fx += fx;
+        simNodes[k].fy += fy;
+      }
     }
 
+    // Apply attraction forces for linked nodes
+    links.forEach(link => {
+      const source = simNodes.find(n => n.id === link.source);
+      const target = simNodes.find(n => n.id === link.target);
+      
+      if (source && target) {
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const distance = Math.sqrt(dx * dx + dy * dy) || 0.1;
+        
+        // Spring force - pulls connected nodes together
+        const attraction = (distance - 350) * 0.25 * alpha;
+        const fx = (dx / distance) * attraction;
+        const fy = (dy / distance) * attraction;
+        
+        source.fx += fx;
+        source.fy += fy;
+        target.fx -= fx;
+        target.fy -= fy;
+      }
+    });
+
+    // Apply center force to keep everything centered
     const centerX = width / 2;
     const centerY = height / 2;
-
-    // For very small graphs, use a simple manual layout
-    if (nodes.length <= 3) {
-      const layoutedSmall = nodes.map((node, index) => {
-        let x = centerX;
-        let y = centerY;
-
-        if (nodes.length === 2) {
-          x = centerX + (index === 0 ? -140 : 140);
-          y = centerY + (index === 0 ? -40 : 40);
-        } else if (nodes.length === 3) {
-          const angle = (index / 3) * Math.PI * 2;
-          const radius = 180;
-          x = centerX + Math.cos(angle) * radius;
-          y = centerY + Math.sin(angle) * radius;
-        }
-
-        return {
-          ...node,
-          position: { x, y },
-        };
-      });
-
-      resolve(layoutedSmall);
-      return;
-    }
-
-    // Create simulation nodes with initial positions
-    const simNodes = nodes.map((n, i) => {
-      const cols = Math.ceil(Math.sqrt(nodes.length));
-      const initialX = (i % cols) * 200 + Math.random() * 50;
-      const initialY = Math.floor(i / cols) * 200 + Math.random() * 50;
-
-      return {
-        id: n.id,
-        x: initialX,
-        y: initialY,
-        vx: 0,
-        vy: 0,
-      };
+    
+    simNodes.forEach(node => {
+      const dx = centerX - node.x;
+      const dy = centerY - node.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const strength = 0.1 * alpha;
+      
+      node.fx += (dx / distance) * strength || 0;
+      node.fy += (dy / distance) * strength || 0;
     });
 
-    // Create a map for quick lookup
-    const nodeMap = new Map(simNodes.map(n => [n.id, n]));
-
-    // Simulation parameters
-    const iterations = 100;
-    const repulsionStrength = 5000;
-    const attractionStrength = 0.05;
-    const linkDistance = 250;
-    const centerStrength = 0.01;
-    const damping = 0.9;
-    const minDistance = 100;
-
-    // Run simulation
-    for (let iter = 0; iter < iterations; iter++) {
-      const alpha = 1 - iter / iterations;
-
-      // Apply repulsion between all nodes
-      for (let i = 0; i < simNodes.length; i++) {
-        for (let j = i + 1; j < simNodes.length; j++) {
-          const nodeA = simNodes[i];
-          const nodeB = simNodes[j];
-
-          const dx = nodeB.x - nodeA.x;
-          const dy = nodeB.y - nodeA.y;
-          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-          if (distance < minDistance * 3) {
-            const force = (repulsionStrength * alpha) / (distance * distance);
-            const fx = (dx / distance) * force;
-            const fy = (dy / distance) * force;
-
-            nodeA.vx -= fx;
-            nodeA.vy -= fy;
-            nodeB.vx += fx;
-            nodeB.vy += fy;
-          }
-        }
-      }
-
-      // Apply attraction for connected nodes
-      edges.forEach(edge => {
-        const source = nodeMap.get(edge.source);
-        const target = nodeMap.get(edge.target);
-
-        if (source && target) {
-          const dx = target.x - source.x;
-          const dy = target.y - source.y;
-          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-          const displacement = distance - linkDistance;
-          const force = displacement * attractionStrength * alpha;
-          const fx = (dx / distance) * force;
-          const fy = (dy / distance) * force;
-
-          source.vx += fx;
-          source.vy += fy;
-          target.vx -= fx;
-          target.vy -= fy;
-        }
-      });
-
-      // Apply centering force
-      simNodes.forEach(node => {
-        node.vx += (centerX - node.x) * centerStrength * alpha;
-        node.vy += (centerY - node.y) * centerStrength * alpha;
-      });
-
-      // Update positions
-      simNodes.forEach(node => {
-        node.vx *= damping;
-        node.vy *= damping;
-        node.x += node.vx;
-        node.y += node.vy;
-      });
-    }
-
-    // Map positions back onto original React Flow node objects
-    const layoutedNodes = nodes.map((node) => {
-      const simNode = nodeMap.get(node.id);
-      return {
-        ...node,
-        position: {
-          x: simNode ? simNode.x : 0,
-          y: simNode ? simNode.y : 0,
-        },
-      };
+    // Update velocities and positions with damping
+    simNodes.forEach(node => {
+      node.vx += node.fx;
+      node.vy += node.fy;
+      node.vx *= 0.8; // damping
+      node.vy *= 0.8;
+      
+      node.x += node.vx;
+      node.y += node.vy;
+      
+      // Keep nodes within bounds with collision
+      const padding = 110;
+      node.x = Math.max(padding, Math.min(width - padding, node.x));
+      node.y = Math.max(padding, Math.min(height - padding, node.y));
     });
+  }
 
-    resolve(layoutedNodes);
-  });
+  return simNodes.map(({ fx, fy, vx, vy, ...node }) => node);
 }
+
+export { computeLayout };
