@@ -1,4 +1,4 @@
-import * as d3 from 'd3-force';
+import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3-force';
 
 /**
  * Apply a force-directed layout to React Flow nodes based on their connections.
@@ -70,21 +70,19 @@ export function applyForceLayout(nodes, edges, width = 800, height = 600) {
       strength: 1,
     }));
 
-    const simulation = d3
-      .forceSimulation(simNodes)
+    const simulation = forceSimulation(simNodes)
       .force(
         'link',
-        d3
-          .forceLink(simLinks)
+        forceLink(simLinks)
           .id((n) => n.id)
           .distance(350) // more space between connected nodes
           .strength((l) => Math.min(l.strength * 0.25, 1))
       )
       // Stronger repulsion spreads clusters apart so edges are more visible
-      .force('charge', d3.forceManyBody().strength(-250))
-      .force('center', d3.forceCenter(width / 2, height / 2)) // pull everything to center
+      .force('charge', forceManyBody().strength(-250))
+      .force('center', forceCenter(width / 2, height / 2)) // pull everything to center
       // Larger collision radius to keep cards from overlapping visually
-      .force('collision', d3.forceCollide(110))
+      .force('collision', forceCollide(110))
       .stop();
 
     // run the simulation synchronously instead of animating it
