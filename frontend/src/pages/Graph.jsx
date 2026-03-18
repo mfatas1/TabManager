@@ -5,7 +5,7 @@ import { useLinks } from '../hooks/useLinks';
 import { buildGraphData } from '../utils/graphTransform';
 import { applyForceLayout } from '../utils/forceLayout';
 import LinkNode from '../components/LinkNode';
-import { X, ExternalLink, Tag, Calendar } from 'lucide-react';
+import { X, ExternalLink, Tag, Calendar, Network } from 'lucide-react';
 
 // Define node types outside component to avoid re-renders
 const nodeTypes = { linkNode: LinkNode };
@@ -118,39 +118,57 @@ export default function Graph() {
 
   return (
     <div className="min-h-screen bg-[#0f1117] flex flex-col">
-      {/* Tag Filters */}
-      <div className="px-6 py-4 border-b border-white/5">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter by tag</span>
-            {selectedTag && (
-              <button
-                type="button"
-                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-                onClick={clearTagFilter}
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {availableTags.length === 0 && (
-              <span className="text-sm text-slate-500">No tags available yet.</span>
-            )}
-            {availableTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleTagClick(tag)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  selectedTag === tag
-                    ? 'bg-indigo-500 text-white border-indigo-500'
-                    : 'bg-white/5 text-slate-400 border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:text-indigo-300'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
+      {/* Hero Header Section */}
+      <div className="border-b border-white/5 bg-gradient-to-b from-indigo-500/5 to-transparent">
+        <div className="max-w-6xl mx-auto px-6 pt-24 pb-8">
+          <div className="flex flex-col items-center text-center">
+            {/* Eyebrow badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300 mb-6">
+              <Network className="size-3" />
+              Visual knowledge map
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
+              Knowledge <span className="text-indigo-400">Graph</span>
+            </h1>
+            <p className="max-w-lg text-slate-400 text-base leading-relaxed mb-8">
+              Explore your saved links as an interactive network. Related content clusters together based on shared tags.
+            </p>
+            
+            {/* Tag Filters */}
+            <div className="w-full max-w-2xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter by tag</span>
+                {selectedTag && (
+                  <button
+                    type="button"
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                    onClick={clearTagFilter}
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {availableTags.length === 0 && (
+                  <span className="text-sm text-slate-500">No tags available yet.</span>
+                )}
+                {availableTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleTagClick(tag)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      selectedTag === tag
+                        ? 'bg-indigo-500 text-white border-indigo-500'
+                        : 'bg-white/5 text-slate-400 border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:text-indigo-300'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

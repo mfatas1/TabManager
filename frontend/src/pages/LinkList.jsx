@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLinks } from '../hooks/useLinks';
 import { saveLink, deleteLink } from '../api/links';
-import { Plus, X, ExternalLink, Trash2 } from 'lucide-react';
+import { Plus, X, ExternalLink, Trash2, BookOpen } from 'lucide-react';
 
 function LinkList() {
   const { links, loading, error, refetch } = useLinks();
@@ -125,48 +125,62 @@ function LinkList() {
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-white">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Library</h1>
-            <p className="text-slate-400 text-sm">Save links and let AI organize them for you</p>
-          </div>
-          
-          {/* URL Submission Form */}
-          <form onSubmit={handleSubmit} className="w-full sm:w-auto">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste a URL here..."
-                disabled={submitting}
-                className="w-full sm:w-80 px-4 py-2.5 text-sm border border-white/10 rounded-lg bg-white/5 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              />
-              <button 
-                type="submit" 
-                disabled={submitting || !url.trim()}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-indigo-500 text-white rounded-lg hover:bg-indigo-400 disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors"
-              >
-                <Plus className="size-4" />
-                {submitting ? 'Saving...' : 'Save'}
-              </button>
+      {/* Hero Header Section */}
+      <div className="border-b border-white/5 bg-gradient-to-b from-indigo-500/5 to-transparent">
+        <div className="max-w-6xl mx-auto px-6 pt-24 pb-12">
+          <div className="flex flex-col items-center text-center mb-10">
+            {/* Eyebrow badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300 mb-6">
+              <BookOpen className="size-3" />
+              Your saved knowledge
             </div>
             
-            {/* Submission feedback */}
-            {submitSuccess && (
-              <div className="mt-3 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-sm">
-                Link saved successfully!
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
+              Your <span className="text-indigo-400">Library</span>
+            </h1>
+            <p className="max-w-lg text-slate-400 text-base leading-relaxed mb-8">
+              Save any URL and let AI automatically extract titles, summaries, and semantic tags for intelligent organization.
+            </p>
+            
+            {/* URL Submission Form */}
+            <form onSubmit={handleSubmit} className="w-full max-w-xl">
+              <div className="flex flex-col sm:flex-row items-stretch gap-3">
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="Paste a URL to save..."
+                  disabled={submitting}
+                  className="flex-1 px-5 py-3 text-sm border border-white/10 rounded-xl bg-white/5 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                />
+                <button 
+                  type="submit" 
+                  disabled={submitting || !url.trim()}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-indigo-500 text-white rounded-xl hover:bg-indigo-400 disabled:bg-slate-700 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-indigo-500/25"
+                >
+                  <Plus className="size-4" />
+                  {submitting ? 'Saving...' : 'Save Link'}
+                </button>
               </div>
-            )}
-            {submitError && (
-              <div className="mt-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/25 text-red-300 text-sm">
-                {submitError}
-              </div>
-            )}
-          </form>
+              
+              {/* Submission feedback */}
+              {submitSuccess && (
+                <div className="mt-4 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-sm">
+                  Link saved successfully!
+                </div>
+              )}
+              {submitError && (
+                <div className="mt-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-sm">
+                  {submitError}
+                </div>
+              )}
+            </form>
+          </div>
         </div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 py-10">
 
         {/* Tag Filter Display */}
         {selectedTag && (
