@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
 export function NavBar({ items, className }) {
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const currentTag = searchParams.get('tag')
   const [isMobile, setIsMobile] = useState(false)
 
   // Determine active tab based on current route
@@ -25,7 +27,7 @@ export function NavBar({ items, className }) {
   return (
     <div
       className={cn(
-        "fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6",
+        "fixed bottom-6 sm:bottom-auto sm:top-0 left-1/2 -translate-x-1/2 z-50 sm:pt-6",
         className,
       )}
     >
@@ -37,7 +39,7 @@ export function NavBar({ items, className }) {
           return (
             <Link
               key={item.name}
-              to={item.url}
+              to={currentTag && (item.url === '/library' || item.url === '/graph') ? `${item.url}?tag=${currentTag}` : item.url}
               className={cn(
                 "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
                 "text-slate-400 hover:text-indigo-400",

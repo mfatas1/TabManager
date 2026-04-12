@@ -35,27 +35,25 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   /* ─── TabManager brand tokens ─────────────────────────────── */
-  /* Override shadcn defaults so all app pages use the dark theme */
-  --background: #0f1117;
-  --foreground: #f9fafb;
-  --surface: #1e2433;
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --border: rgba(148, 163, 184, 0.12);
-  --card: #1e2433;
-  --card-foreground: #f9fafb;
-  --muted-foreground: #9ca3af;
+  --background: #09090e;
+  --foreground: #eef0f8;
+  --surface: #0f1118;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --text-primary: #eef0f8;
+  --text-secondary: #8892b0;
+  --border: rgba(255, 255, 255, 0.07);
+  --card: #0d1017;
+  --card-foreground: #eef0f8;
+  --muted-foreground: #8892b0;
 
-  /* Keep tm- aliases for backwards compat in index.css utilities */
-  --tm-background: #0f1117;
-  --tm-surface: #1e2433;
-  --tm-accent: #6366f1;
-  --tm-accent-hover: #4f46e5;
-  --tm-text-primary: #f9fafb;
-  --tm-text-secondary: #9ca3af;
-  --tm-border: rgba(148, 163, 184, 0.12);
+  --tm-background: #09090e;
+  --tm-surface: #0f1118;
+  --tm-accent: #818cf8;
+  --tm-accent-hover: #6366f1;
+  --tm-text-primary: #eef0f8;
+  --tm-text-secondary: #8892b0;
+  --tm-border: rgba(255, 255, 255, 0.07);
 }
 
 .dark {
@@ -103,7 +101,9 @@
 }
 
 @theme inline {
-  --font-sans: 'Inter', 'Geist', system-ui, sans-serif;
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -148,6 +148,8 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     line-height: 1.5;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+    background-size: 28px 28px;
   }
 }
 

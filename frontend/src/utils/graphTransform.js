@@ -1,79 +1,80 @@
 /**
- * Transform links data into React Flow nodes and edges format
- * @param {Array} links - Array of link objects from the API
- * @returns {Object} { nodes, edges } - React Flow compatible data
+ * Hub-and-spoke graph model:
+ *   - Broad tag categories become large hub nodes (type: 'tagNode')
+ *   - Each saved link becomes a smaller spoke node (type: 'linkNode')
+ *   - Edges connect link nodes to every broad-tag hub they belong to
  */
 export function buildGraphData(links) {
-  // Step 1: turn each link into a node
-  // We spread links across a grid layout instead of random positions
-  // so that nodes don't all start piled on top of each other
-  const GRID_COLS = 4;
-  const H_SPACING = 250;
-  const V_SPACING = 150;
+  // Step 1: collect all broad tags and count how many links use each
+  const tagMap = new Map(); // tagName -> { id, name, count }
 
-  const nodes = links
-    .filter(link => link.id != null) // Filter out links without IDs
-    .map((link, i) => {
-      // Separate specific and broad tags
+  links.forEach(link => {
+    (link.tags || []).forEach(tag => {
+      const tagObj = typeof tag === 'string' ? { name: tag, tag_type: 'broad' } : tag;
+      if (tagObj.tag_type === 'broad' && tagObj.name) {
+        if (!tagMap.has(tagObj.name)) {
+          tagMap.set(tagObj.name, { id: `tag__${tagObj.name}`, name: tagObj.name, count: 0 });
+        }
+        tagMap.get(tagObj.name).count++;
+      }
+    });
+  });
+
+  // Step 2: hub nodes (one per broad tag)
+  const tagNodes = Array.from(tagMap.values()).map(tag => ({
+    id: tag.id,
+    type: 'tagNode',
+    data: { label: tag.name, count: tag.count },
+    position: { x: 0, y: 0 }, // filled by layout
+  }));
+
+  // Step 3: link (spoke) nodes
+  const linkNodes = links
+    .filter(link => link.id != null)
+    .map(link => {
       const allTags = link.tags || [];
-      const specificTags = allTags.filter(t => t.tag_type === 'specific' || !t.tag_type); // fallback for old data
-      const broadTags = allTags.filter(t => t.tag_type === 'broad');
-      
+      const specificTags = allTags.filter(t => {
+        const o = typeof t === 'string' ? { tag_type: undefined } : t;
+        return o.tag_type === 'specific' || !o.tag_type;
+      });
+      const broadTags = allTags.filter(t => {
+        const o = typeof t === 'string' ? { tag_type: undefined } : t;
+        return o.tag_type === 'broad';
+      });
       return {
         id: String(link.id),
-        type: 'linkNode', // Use our custom node type
+        type: 'linkNode',
         data: {
-          label: link.title || link.url,  // fall back to URL if title is missing
-          tags: specificTags,              // store specific tags for display
-          broadTags: broadTags,           // store broad tags for edges
-          url: link.url
+          label: link.title || link.url,
+          tags: specificTags,
+          broadTags,
+          url: link.url,
         },
-        position: {
-          x: (i % GRID_COLS) * H_SPACING,
-          y: Math.floor(i / GRID_COLS) * V_SPACING
-        }
+        position: { x: 0, y: 0 },
       };
     });
 
-  // Step 2: find shared tags between every pair of links
-  // and create an edge for each pair that shares at least one tag
+  // Step 4: edges — link node → tag hub (for every broad tag on the link)
   const edges = [];
-  
-  // Create a set of valid node IDs for quick lookup
-  const validNodeIds = new Set(nodes.map(n => n.id));
-
-  for (let i = 0; i < links.length; i++) {
-    for (let j = i + 1; j < links.length; j++) {
-      // Skip if either link doesn't have a valid ID
-      if (!links[i].id || !links[j].id) continue;
-      
-      const sourceId = String(links[i].id);
-      const targetId = String(links[j].id);
-      
-      // Only create edge if both nodes exist
-      if (!validNodeIds.has(sourceId) || !validNodeIds.has(targetId)) continue;
-      
-      // Use broad tags for graph connections (more meaningful connections)
-      const broadTagsA = (links[i].tags || [])
-        .filter(t => t.tag_type === 'broad')
-        .map(t => t.name || t);
-      const broadTagsB = (links[j].tags || [])
-        .filter(t => t.tag_type === 'broad')
-        .map(t => t.name || t);
-
-      const sharedTags = broadTagsA.filter(tag => broadTagsB.includes(tag));
-
-      if (sharedTags.length > 0) {
+  links.forEach(link => {
+    if (!link.id) return;
+    const linkId = String(link.id);
+    (link.tags || []).forEach(tag => {
+      const tagObj = typeof tag === 'string' ? { name: tag, tag_type: 'broad' } : tag;
+      if (tagObj.tag_type === 'broad' && tagObj.name && tagMap.has(tagObj.name)) {
+        const hubId = tagMap.get(tagObj.name).id;
         edges.push({
-          id: `e${sourceId}-${targetId}`,
-          source: sourceId,
-          target: targetId,
-          label: sharedTags.join(', '),  // show shared tags on the edge
-          style: { strokeWidth: Math.min(sharedTags.length, 5) }  // thicker edge = more shared tags, cap at 5
+          id: `e-${linkId}-${hubId}`,
+          source: linkId,
+          target: hubId,
+          style: {
+            stroke: 'rgba(129, 140, 248, 0.18)',
+            strokeWidth: 1,
+          },
         });
       }
-    }
-  }
+    });
+  });
 
-  return { nodes, edges };
+  return { nodes: [...tagNodes, ...linkNodes], edges };
 }

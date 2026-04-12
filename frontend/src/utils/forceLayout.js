@@ -1,156 +1,144 @@
 /**
- * Native force-directed layout - NO external dependencies.
- * Uses physics simulation to position nodes based on their connections.
- */
-
-/**
- * Apply a force-directed layout to React Flow nodes based on their connections.
+ * Hub-and-spoke layout.
  *
- * @param {Array} nodes - React Flow nodes
- * @param {Array} edges - React Flow edges
- * @param {number} width - Approximate canvas width
- * @param {number} height - Approximate canvas height
- * @returns {Promise<Array>} - Promise resolving to layouted nodes
+ * Tag hub nodes are arranged in a circle; each link node is placed in a
+ * smaller orbit around its *primary* hub (the broad tag with the most links),
+ * then a short force simulation tidies overlaps.
  */
-export function applyForceLayout(nodes, edges, width = 800, height = 600) {
+export function applyForceLayout(nodes, edges) {
   return new Promise((resolve) => {
     if (!nodes || nodes.length === 0) {
       resolve(nodes || []);
       return;
     }
 
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const hubs = nodes.filter(n => n.type === 'tagNode');
+    const spokes = nodes.filter(n => n.type !== 'tagNode');
 
-    // For very small graphs, use a simple manual layout
-    if (nodes.length <= 3) {
-      const layoutedSmall = nodes.map((node, index) => {
-        let x = centerX;
-        let y = centerY;
+    // ── 1. Position hubs in a circle ─────────────────────────────────────
+    const CX = 0;
+    const CY = 0;
+    const hubRadius = Math.max(320, hubs.length * 90);
+    const hubPos = new Map();
 
-        if (nodes.length === 2) {
-          x = centerX + (index === 0 ? -140 : 140);
-          y = centerY + (index === 0 ? -40 : 40);
-        } else if (nodes.length === 3) {
-          const angle = (index / 3) * Math.PI * 2;
-          const radius = 180;
-          x = centerX + Math.cos(angle) * radius;
-          y = centerY + Math.sin(angle) * radius;
-        }
-
-        return {
-          ...node,
-          position: { x, y },
-        };
+    hubs.forEach((hub, i) => {
+      const angle = (i / Math.max(hubs.length, 1)) * Math.PI * 2 - Math.PI / 2;
+      hubPos.set(hub.id, {
+        x: CX + Math.cos(angle) * hubRadius,
+        y: CY + Math.sin(angle) * hubRadius,
       });
-
-      resolve(layoutedSmall);
-      return;
-    }
-
-    // Create simulation nodes with initial positions
-    const simNodes = nodes.map((n, i) => {
-      const cols = Math.ceil(Math.sqrt(nodes.length));
-      const initialX = (i % cols) * 200 + Math.random() * 50;
-      const initialY = Math.floor(i / cols) * 200 + Math.random() * 50;
-
-      return {
-        id: n.id,
-        x: initialX,
-        y: initialY,
-        vx: 0,
-        vy: 0,
-      };
     });
 
-    // Create a map for quick lookup
-    const nodeMap = new Map(simNodes.map(n => [n.id, n]));
+    // ── 2. Map each link to all its hubs, pick primary by hub size ────────
+    const linkHubs = new Map(); // linkId -> [hubId, ...]
+    edges.forEach(e => {
+      if (!hubPos.has(e.target)) return;
+      if (!linkHubs.has(e.source)) linkHubs.set(e.source, []);
+      linkHubs.get(e.source).push(e.target);
+    });
 
-    // Simulation parameters
-    const iterations = 100;
-    const repulsionStrength = 5000;
-    const attractionStrength = 0.05;
-    const linkDistance = 250;
-    const centerStrength = 0.01;
-    const damping = 0.9;
-    const minDistance = 100;
+    // Count how many links belong to each hub
+    const hubSize = new Map(hubs.map(h => [h.id, 0]));
+    linkHubs.forEach(hubIds => {
+      hubIds.forEach(hid => hubSize.set(hid, (hubSize.get(hid) || 0) + 1));
+    });
 
-    // Run simulation
-    for (let iter = 0; iter < iterations; iter++) {
-      const alpha = 1 - iter / iterations;
+    // Each link's primary hub = the one with the most links (most company)
+    const linkPrimaryHub = new Map();
+    linkHubs.forEach((hubIds, linkId) => {
+      const best = hubIds.reduce((a, b) => (hubSize.get(b) > hubSize.get(a) ? b : a));
+      linkPrimaryHub.set(linkId, best);
+    });
 
-      // Apply repulsion between all nodes
-      for (let i = 0; i < simNodes.length; i++) {
-        for (let j = i + 1; j < simNodes.length; j++) {
-          const nodeA = simNodes[i];
-          const nodeB = simNodes[j];
+    // ── 3. Place link nodes in a ring around their primary hub ────────────
+    const hubBuckets = new Map(hubs.map(h => [h.id, []]));
+    linkPrimaryHub.forEach((hubId, linkId) => hubBuckets.get(hubId)?.push(linkId));
 
-          const dx = nodeB.x - nodeA.x;
-          const dy = nodeB.y - nodeA.y;
-          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+    const spokePos = new Map();
+    hubBuckets.forEach((linkIds, hubId) => {
+      const { x: hx, y: hy } = hubPos.get(hubId);
+      const spokeRadius = Math.max(140, linkIds.length * 28);
+      linkIds.forEach((linkId, i) => {
+        const angle = (i / Math.max(linkIds.length, 1)) * Math.PI * 2 - Math.PI / 2;
+        spokePos.set(linkId, {
+          x: hx + Math.cos(angle) * spokeRadius + (Math.random() - 0.5) * 20,
+          y: hy + Math.sin(angle) * spokeRadius + (Math.random() - 0.5) * 20,
+        });
+      });
+    });
 
-          if (distance < minDistance * 3) {
-            const force = (repulsionStrength * alpha) / (distance * distance);
-            const fx = (dx / distance) * force;
-            const fy = (dy / distance) * force;
+    // Orphans: scatter around origin
+    const orphans = spokes.filter(n => !spokePos.has(n.id));
+    orphans.forEach((node, i) => {
+      spokePos.set(node.id, {
+        x: CX + (i % 5) * 160 - 320,
+        y: CY + Math.floor(i / 5) * 140 + hubRadius + 200,
+      });
+    });
 
-            nodeA.vx -= fx;
-            nodeA.vy -= fy;
-            nodeB.vx += fx;
-            nodeB.vy += fy;
-          }
+    // ── 4. Light force simulation to reduce overlap ───────────────────────
+    const allPos = new Map([...hubPos, ...spokePos]);
+    const allIds = Array.from(allPos.keys());
+    const vel = new Map(allIds.map(id => [id, { vx: 0, vy: 0 }]));
+
+    // Which nodes are free to move (hubs stay fixed)
+    const free = new Set(spokes.map(n => n.id));
+
+    const ITERS = 80;
+    const REPULSION = 6000;
+    const DAMPING = 0.82;
+
+    for (let iter = 0; iter < ITERS; iter++) {
+      const alpha = 1 - iter / ITERS;
+
+      // Repulsion between ALL pairs
+      for (let i = 0; i < allIds.length; i++) {
+        for (let j = i + 1; j < allIds.length; j++) {
+          const a = allIds[i], b = allIds[j];
+          const pa = allPos.get(a), pb = allPos.get(b);
+          const dx = pb.x - pa.x;
+          const dy = pb.y - pa.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const force = (REPULSION * alpha) / (dist * dist);
+          const fx = (dx / dist) * force;
+          const fy = (dy / dist) * force;
+          if (free.has(a)) { vel.get(a).vx -= fx; vel.get(a).vy -= fy; }
+          if (free.has(b)) { vel.get(b).vx += fx; vel.get(b).vy += fy; }
         }
       }
 
-      // Apply attraction for connected nodes
-      edges.forEach(edge => {
-        const source = nodeMap.get(edge.source);
-        const target = nodeMap.get(edge.target);
-
-        if (source && target) {
-          const dx = target.x - source.x;
-          const dy = target.y - source.y;
-          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-          const displacement = distance - linkDistance;
-          const force = displacement * attractionStrength * alpha;
-          const fx = (dx / distance) * force;
-          const fy = (dy / distance) * force;
-
-          source.vx += fx;
-          source.vy += fy;
-          target.vx -= fx;
-          target.vy -= fy;
-        }
+      // Spring: link node pulled toward its primary hub
+      spokes.forEach(node => {
+        const primaryHub = linkPrimaryHub.get(node.id);
+        if (!primaryHub) return;
+        const pp = allPos.get(node.id);
+        const hp = allPos.get(primaryHub);
+        if (!pp || !hp) return;
+        const dx = hp.x - pp.x;
+        const dy = hp.y - pp.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const target = Math.max(140, Math.min(dist, 200));
+        const force = (dist - target) * 0.04 * alpha;
+        vel.get(node.id).vx += (dx / dist) * force;
+        vel.get(node.id).vy += (dy / dist) * force;
       });
 
-      // Apply centering force
-      simNodes.forEach(node => {
-        node.vx += (centerX - node.x) * centerStrength * alpha;
-        node.vy += (centerY - node.y) * centerStrength * alpha;
-      });
-
-      // Update positions
-      simNodes.forEach(node => {
-        node.vx *= damping;
-        node.vy *= damping;
-        node.x += node.vx;
-        node.y += node.vy;
+      // Integrate
+      free.forEach(id => {
+        const v = vel.get(id);
+        v.vx *= DAMPING;
+        v.vy *= DAMPING;
+        const p = allPos.get(id);
+        allPos.set(id, { x: p.x + v.vx, y: p.y + v.vy });
       });
     }
 
-    // Map positions back onto original React Flow node objects
-    const layoutedNodes = nodes.map((node) => {
-      const simNode = nodeMap.get(node.id);
-      return {
+    // ── 5. Assemble final node list ───────────────────────────────────────
+    resolve(
+      nodes.map(node => ({
         ...node,
-        position: {
-          x: simNode ? simNode.x : 0,
-          y: simNode ? simNode.y : 0,
-        },
-      };
-    });
-
-    resolve(layoutedNodes);
+        position: allPos.get(node.id) ?? { x: 0, y: 0 },
+      }))
+    );
   });
 }
