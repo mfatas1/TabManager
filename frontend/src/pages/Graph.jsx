@@ -5,6 +5,7 @@ import 'reactflow/dist/style.css';
 import { useLinks } from '../hooks/useLinks';
 import { buildGraphData } from '../utils/graphTransform';
 import { applyForceLayout } from '../utils/forceLayout';
+import { addLinkToProject, getProjects } from '../api/projects';
 import LinkNode from '../components/LinkNode';
 import TagNode from '../components/TagNode';
 import { X, ExternalLink, Tag, Calendar, Network } from 'lucide-react';
@@ -18,6 +19,9 @@ export default function Graph() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedLink, setSelectedLink] = useState(null);
   const [showAllTags, setShowAllTags] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [projectMessage, setProjectMessage] = useState(null);
 
   const selectedTag = searchParams.get('tag');
   const rfInstance = useRef(null);
@@ -64,8 +68,25 @@ export default function Graph() {
     updateGraph();
   }, [links, selectedTag, setNodes, setEdges]);
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await getProjects();
+        setProjects(response.data);
+      } catch {
+        setProjects([]);
+      }
+    };
+    fetchProjects();
+  }, []);
+
   const handleTagClick = (tagName) => setSearchParams(selectedTag === tagName ? {} : { tag: tagName });
   const clearTagFilter = () => setSearchParams({});
+
+  const openPanel = (link) => {
+    setProjectMessage(null);
+    setSelectedLink(link);
+  };
 
   const onNodeClick = (event, node) => {
     if (node.type === 'tagNode') {
@@ -77,16 +98,27 @@ export default function Graph() {
       if (node.data.url) window.open(node.data.url, '_blank');
     } else {
       const link = links.find((l) => String(l.id) === node.id);
-      if (link) setSelectedLink(link);
+      if (link) openPanel(link);
     }
   };
 
   const closePanel = () => setSelectedLink(null);
 
+  const handleAddToProject = async () => {
+    if (!selectedLink || !selectedProjectId) return;
+    try {
+      setProjectMessage(null);
+      await addLinkToProject(selectedProjectId, selectedLink.id);
+      setProjectMessage('Added to project');
+    } catch (err) {
+      setProjectMessage(err.response?.data?.detail || err.message || 'Could not add to project');
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090e] flex items-center justify-center">
-        <span className="font-mono text-xs text-slate-600 tracking-widest uppercase animate-pulse">
+      <div className="min-h-screen bg-[#f7f8f5] flex items-center justify-center">
+        <span className="font-mono text-xs text-[#7d8984] tracking-widest uppercase animate-pulse">
           Loading graph…
         </span>
       </div>
@@ -95,7 +127,7 @@ export default function Graph() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#09090e] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f8f5] flex items-center justify-center">
         <span className="font-mono text-xs text-red-400">Error: {error}</span>
       </div>
     );
@@ -103,36 +135,34 @@ export default function Graph() {
 
   if (links.length === 0) {
     return (
-      <div className="min-h-screen bg-[#09090e] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f8f5] flex items-center justify-center">
         <div className="text-center">
-          <div className="size-14 mx-auto mb-6 rounded-2xl border border-white/8 bg-white/[0.02] flex items-center justify-center">
-            <Tag className="size-6 text-slate-600" />
+          <div className="size-14 mx-auto mb-6 rounded-lg border border-[#d8ded8] bg-white flex items-center justify-center">
+            <Tag className="size-6 text-[#7d8984]" />
           </div>
-          <h2 className="font-display text-lg font-semibold text-slate-400 mb-2">No links yet</h2>
-          <p className="font-mono text-xs text-slate-700 uppercase tracking-widest">Add some links to see the graph</p>
+          <h2 className="font-display text-lg font-semibold text-[#5f6c67] mb-2">No links yet</h2>
+          <p className="font-mono text-xs text-[#9aa39f] uppercase tracking-widest">Add some links to see the graph</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#09090e] flex flex-col">
+    <div className="bg-[#f7f8f5] flex flex-col">
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="relative border-b border-white/5 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-indigo-600/6 rounded-full blur-[80px] pointer-events-none" />
-
+      <div className="relative border-b border-[#dfe5df] overflow-hidden">
         <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-6">
           <div className="flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-indigo-500/20 bg-indigo-500/6 px-4 py-1.5 mb-7">
-              <Network className="size-3 text-indigo-400" />
-              <span className="font-mono text-[11px] tracking-[0.12em] text-indigo-300/90 uppercase">Visual knowledge map</span>
+            <div className="inline-flex items-center gap-2.5 rounded-md border border-[#c8d8cf] bg-white px-4 py-1.5 mb-7">
+              <Network className="size-3 text-[#4f8f7a]" />
+              <span className="font-mono text-[11px] tracking-[0.12em] text-[#315f56]/90 uppercase">Visual knowledge map</span>
             </div>
 
             <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-[0.92] mb-4">
-              Knowledge <span className="text-indigo-400">Graph</span>
+              Knowledge <span className="text-[#4f8f7a]">Graph</span>
             </h1>
-            <p className="max-w-sm text-sm text-slate-500 leading-relaxed mb-10">
+            <p className="max-w-sm text-sm text-[#68746f] leading-relaxed mb-10">
               Explore your saved links as an interactive network. Related content clusters by shared tags.
             </p>
 
@@ -143,8 +173,8 @@ export default function Graph() {
                   onClick={clearTagFilter}
                   className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                     !selectedTag
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-transparent border-white/8 text-slate-500 hover:border-white/15 hover:text-slate-400'
+                      ? 'bg-[#e7efea] border-[#b7c6bd] text-[#26312d]'
+                      : 'bg-transparent border-[#d8ded8] text-[#68746f] hover:border-[#c3cfc7] hover:text-[#5f6c67]'
                   }`}
                 >
                   All <span className="opacity-50">{links.length}</span>
@@ -156,8 +186,8 @@ export default function Graph() {
                     onClick={() => handleTagClick(tag)}
                     className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                       selectedTag === tag
-                        ? 'bg-indigo-500 border-indigo-500 text-white shadow-sm shadow-indigo-500/20'
-                        : 'bg-transparent border-white/8 text-slate-500 hover:border-indigo-500/30 hover:text-indigo-300'
+                        ? 'bg-[#315f56] border-[#315f56] text-white'
+                        : 'bg-transparent border-[#d8ded8] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#315f56]'
                     }`}
                   >
                     {tag} <span className="opacity-50">{count}</span>
@@ -166,7 +196,7 @@ export default function Graph() {
                 {hiddenCount > 0 && (
                   <button
                     onClick={() => setShowAllTags(v => !v)}
-                    className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-white/8 text-slate-600 hover:text-slate-400 hover:border-white/15 transition-all"
+                    className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[#d8ded8] text-[#7d8984] hover:text-[#5f6c67] hover:border-[#c3cfc7] transition-all"
                   >
                     {showAllTags ? 'show less' : `+${hiddenCount} more`}
                   </button>
@@ -192,27 +222,22 @@ export default function Graph() {
           fitViewOptions={{ padding: 0.25 }}
           minZoom={0.05}
           maxZoom={2}
-          className="bg-[#09090e]"
+          className="bg-[#f7f8f5]"
         >
-          <Controls className="!bg-[#0d1017] !border-white/8 !rounded-xl [&>button]:!bg-[#0d1017] [&>button]:!border-white/8 [&>button]:!text-slate-500 [&>button:hover]:!bg-indigo-500/10 [&>button:hover]:!text-indigo-300" />
-          <Background variant="dots" gap={24} size={1} color="rgba(255,255,255,0.04)" />
+          <Controls className="!bg-white !border-[#d8ded8] !rounded-lg [&>button]:!bg-white [&>button]:!border-[#d8ded8] [&>button]:!text-[#68746f] [&>button:hover]:!bg-[#edf4ef] [&>button:hover]:!text-[#315f56]" />
+          <Background variant="dots" gap={24} size={1} color="rgba(79, 143, 122, 0.16)" />
         </ReactFlow>
       </div>
 
       {/* ── Side Panel ──────────────────────────────────────────── */}
       {selectedLink && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-[2px]"
-            onClick={closePanel}
-          />
-          <div className="fixed top-0 right-0 w-[400px] h-full bg-[#09090e] border-l border-white/6 z-50 flex flex-col">
+        <div className="fixed top-0 right-0 w-[400px] h-full bg-[#f7f8f5] border-l border-[#dfe5df] z-50 flex flex-col shadow-sm">
             {/* Panel header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-slate-700 uppercase">Link Details</span>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#dfe5df]">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[#9aa39f] uppercase">Link Details</span>
               <button
                 onClick={closePanel}
-                className="p-2 rounded-lg hover:bg-white/5 text-slate-600 hover:text-white transition-colors"
+                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[#7d8984] hover:text-[#26312d] transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -220,20 +245,20 @@ export default function Graph() {
 
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {/* Left accent */}
-              <div className="border-l-2 border-indigo-500/40 pl-4 mb-8">
-                <h3 className="font-display text-base font-semibold text-white leading-snug">
+              <div className="border-l-2 border-[#9cb8aa] pl-4 mb-8">
+                <h3 className="font-display text-base font-semibold text-[#26312d] leading-snug">
                   {selectedLink.title || 'Untitled'}
                 </h3>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-slate-700 uppercase block mb-2">URL</label>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">URL</label>
                   <a
                     href={selectedLink.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-start gap-2 font-mono text-[11px] text-indigo-400/80 hover:text-indigo-300 break-all transition-colors leading-relaxed"
+                    className="inline-flex items-start gap-2 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all transition-colors leading-relaxed"
                   >
                     <ExternalLink className="size-3.5 mt-0.5 flex-shrink-0" />
                     {selectedLink.url}
@@ -242,8 +267,8 @@ export default function Graph() {
 
                 {selectedLink.summary && (
                   <div>
-                    <label className="font-mono text-[10px] tracking-[0.15em] text-slate-700 uppercase block mb-2">Summary</label>
-                    <p className="text-sm text-slate-500 leading-relaxed">{selectedLink.summary}</p>
+                    <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Summary</label>
+                    <p className="text-sm text-[#68746f] leading-relaxed">{selectedLink.summary}</p>
                   </div>
                 )}
 
@@ -256,14 +281,14 @@ export default function Graph() {
                     : [];
                   return specificTags.length > 0 && (
                     <div>
-                      <label className="font-mono text-[10px] tracking-[0.15em] text-slate-700 uppercase block mb-2">Tags</label>
+                      <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Keywords</label>
                       <div className="flex flex-wrap gap-1.5">
                         {specificTags.map((tag) => {
                           const tagObj = typeof tag === 'string' ? { name: tag, id: tag } : tag;
                           return (
                             <span
                               key={tagObj.id || tagObj.name}
-                              className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-indigo-500/10 text-indigo-400/80 border border-indigo-500/15"
+                              className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[#edf4ef] text-[#4f8f7a]/80 border border-[#c8d8cf]"
                             >
                               {tagObj.name}
                             </span>
@@ -275,28 +300,59 @@ export default function Graph() {
                 })()}
 
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-slate-700 uppercase block mb-2">Saved</label>
-                  <div className="flex items-center gap-2 font-mono text-xs text-slate-600">
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Saved</label>
+                  <div className="flex items-center gap-2 font-mono text-xs text-[#7d8984]">
                     <Calendar className="size-3.5" />
                     {new Date(selectedLink.date_saved).toLocaleString()}
                   </div>
                 </div>
+
+                {projects.length > 0 && (
+                  <div>
+                    <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Project</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedProjectId}
+                        onChange={(e) => {
+                          setSelectedProjectId(e.target.value);
+                          setProjectMessage(null);
+                        }}
+                        className="min-w-0 flex-1 px-3 py-2 text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0]"
+                      >
+                        <option value="">Choose project</option>
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>{project.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={handleAddToProject}
+                        disabled={!selectedProjectId}
+                        className="px-3 py-2 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {projectMessage && (
+                      <p className="mt-2 font-mono text-[11px] text-[#68746f]">{projectMessage}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="px-6 py-5 border-t border-white/5">
+            <div className="px-6 py-5 border-t border-[#dfe5df]">
               <a
                 href={selectedLink.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/15"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#315f56] hover:bg-[#244b44] text-white text-sm font-semibold rounded-md transition-colors"
               >
                 <ExternalLink className="size-4" />
                 Open Link
               </a>
             </div>
           </div>
-        </>
       )}
     </div>
   );

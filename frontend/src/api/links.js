@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000';
+const API_HOST = window.location.hostname || 'localhost';
+const BASE_URL = import.meta.env.VITE_API_URL || `http://${API_HOST}:8000`;
 
 /**
  * Get all saved links from the backend

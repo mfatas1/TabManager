@@ -28,6 +28,8 @@ class Link(Base):
     # This creates the many-to-many relationship with tags
     # through the link_tags join table
     tags = relationship("Tag", secondary=link_tags, back_populates="links")
+    project_links = relationship("ProjectLink", back_populates="link", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="linked_link")
 
 
 class Tag(Base):
@@ -49,3 +51,57 @@ class Tag(Base):
     # This creates the many-to-many relationship with links
     # through the link_tags join table
     links = relationship("Link", secondary=link_tags, back_populates="tags")
+
+
+class Project(Base):
+    """
+    Projects table: stores focused workspaces for links and tasks.
+    """
+    __tablename__ = "projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    status = Column(String, nullable=False, default='active')  # active or archived
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    project_links = relationship("ProjectLink", back_populates="project", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectLink(Base):
+    """
+    Join table for project-specific link metadata.
+    """
+    __tablename__ = "project_links"
+
+    project_id = Column(Integer, ForeignKey('projects.id'), primary_key=True)
+    link_id = Column(Integer, ForeignKey('links.id'), primary_key=True)
+    note = Column(String, nullable=True)
+    priority = Column(String, nullable=False, default='normal')  # low, normal, high
+    status = Column(String, nullable=False, default='unread')  # unread, reading, done, reference, skip
+    added_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    project = relationship("Project", back_populates="project_links")
+    link = relationship("Link", back_populates="project_links")
+
+
+class Task(Base):
+    """
+    Project task table. Tasks can optionally point at a saved link.
+    """
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
+    linked_link_id = Column(Integer, ForeignKey('links.id'), nullable=True)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    status = Column(String, nullable=False, default='todo')  # todo, doing, done
+    due_date = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    project = relationship("Project", back_populates="tasks")
+    linked_link = relationship("Link", back_populates="tasks")

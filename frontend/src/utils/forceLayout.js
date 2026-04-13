@@ -18,7 +18,7 @@ export function applyForceLayout(nodes, edges) {
     // ── 1. Position hubs in a circle ─────────────────────────────────────
     const CX = 0;
     const CY = 0;
-    const hubRadius = Math.max(320, hubs.length * 90);
+    const hubRadius = Math.max(340, Math.min(900, hubs.length * 88));
     const hubPos = new Map();
 
     hubs.forEach((hub, i) => {
@@ -57,7 +57,7 @@ export function applyForceLayout(nodes, edges) {
     const spokePos = new Map();
     hubBuckets.forEach((linkIds, hubId) => {
       const { x: hx, y: hy } = hubPos.get(hubId);
-      const spokeRadius = Math.max(140, linkIds.length * 28);
+      const spokeRadius = Math.max(170, Math.min(440, linkIds.length * 30));
       linkIds.forEach((linkId, i) => {
         const angle = (i / Math.max(linkIds.length, 1)) * Math.PI * 2 - Math.PI / 2;
         spokePos.set(linkId, {
@@ -85,7 +85,7 @@ export function applyForceLayout(nodes, edges) {
     const free = new Set(spokes.map(n => n.id));
 
     const ITERS = 80;
-    const REPULSION = 6000;
+    const REPULSION = 12000;
     const DAMPING = 0.82;
 
     for (let iter = 0; iter < ITERS; iter++) {

@@ -1,7 +1,3 @@
-"use client"
-
-import React, { useEffect, useState } from "react"
-import { motion } from "framer-motion"
 import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
@@ -9,29 +5,22 @@ export function NavBar({ items, className }) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const currentTag = searchParams.get('tag')
-  const [isMobile, setIsMobile] = useState(false)
 
   // Determine active tab based on current route
-  const activeTab = items.find(item => item.url === location.pathname)?.name || items[0].name
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+  const activeTab = items.find(item => (
+    item.url === '/'
+      ? location.pathname === '/'
+      : location.pathname.startsWith(item.url)
+  ))?.name || items[0].name
 
   return (
     <div
       className={cn(
-        "fixed bottom-6 sm:bottom-auto sm:top-0 left-1/2 -translate-x-1/2 z-50 sm:pt-6",
+        "fixed bottom-5 sm:bottom-auto sm:top-4 left-1/2 -translate-x-1/2 z-50",
         className,
       )}
     >
-      <div className="flex items-center gap-3 bg-[#0f1117]/80 border border-white/10 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg">
+      <div className="flex items-center gap-1 bg-white/90 border border-[#d8ded8] backdrop-blur py-1 px-1 rounded-lg shadow-sm">
         {items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name
@@ -41,33 +30,16 @@ export function NavBar({ items, className }) {
               key={item.name}
               to={currentTag && (item.url === '/library' || item.url === '/graph') ? `${item.url}?tag=${currentTag}` : item.url}
               className={cn(
-                "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
-                "text-slate-400 hover:text-indigo-400",
-                isActive && "bg-indigo-500/10 text-indigo-400",
+                "relative cursor-pointer text-sm font-semibold px-5 py-2 rounded-md transition-colors",
+                "text-[#68746f] hover:text-[#26312d]",
+                isActive && "bg-[#e7efea] text-[#315f56]",
               )}
             >
               <span className="hidden md:inline">{item.name}</span>
               <span className="md:hidden">
                 <Icon size={18} strokeWidth={2.5} />
               </span>
-              {isActive && (
-                <motion.div
-                  layoutId="lamp"
-                  className="absolute inset-0 w-full bg-indigo-500/5 rounded-full -z-10"
-                  initial={false}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                >
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-indigo-500 rounded-t-full">
-                    <div className="absolute w-12 h-6 bg-indigo-500/20 rounded-full blur-md -top-2 -left-2" />
-                    <div className="absolute w-8 h-6 bg-indigo-500/20 rounded-full blur-md -top-1" />
-                    <div className="absolute w-4 h-4 bg-indigo-500/20 rounded-full blur-sm top-0 left-2" />
-                  </div>
-                </motion.div>
-              )}
+              {isActive && <span className="absolute inset-0 w-full bg-[#e7efea] rounded-md -z-10" />}
             </Link>
           )
         })}
