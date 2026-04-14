@@ -11,6 +11,14 @@ class LinkCreate(BaseModel):
     url: str
 
 
+class LinkUpdate(BaseModel):
+    """
+    Schema for manually editing a link's title or summary.
+    """
+    title: Optional[str] = None
+    summary: Optional[str] = None
+
+
 class LinkAddToProject(BaseModel):
     link_id: int
     note: Optional[str] = None
@@ -22,6 +30,14 @@ class ProjectLinkUpdate(BaseModel):
     note: Optional[str] = None
     priority: Optional[str] = None
     status: Optional[str] = None
+
+
+class ProjectMiniResponse(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
 
 
 class TagResponse(BaseModel):
@@ -47,6 +63,7 @@ class LinkResponse(BaseModel):
     summary: Optional[str]
     date_saved: datetime
     tags: List[TagResponse] = []
+    projects: List[ProjectMiniResponse] = []
 
     class Config:
         from_attributes = True

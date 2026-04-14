@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, ExternalLink, FolderKanban, Plus, Trash2 } from 'lucide-react';
+import StatusPicker from '../components/StatusPicker';
 import {
   addUrlToProject,
   createTask,
@@ -234,15 +235,11 @@ export default function ProjectDetail() {
                     )}
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <select
+                      <StatusPicker
                         value={projectLink.status}
-                        onChange={(e) => handleProjectLinkStatus(projectLink, e.target.value)}
-                        className="font-mono text-[11px] rounded-full border border-[#d8ded8] bg-white px-3 py-1 text-[#68746f]"
-                      >
-                        {linkStatuses.map((status) => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
+                        options={linkStatuses}
+                        onChange={(status) => handleProjectLinkStatus(projectLink, status)}
+                      />
 
                       {topics.map((tag) => {
                         const tagName = getTagName(tag);
@@ -313,15 +310,11 @@ export default function ProjectDetail() {
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <select
+                      <StatusPicker
                         value={task.status}
-                        onChange={(e) => handleTaskStatus(task, e.target.value)}
-                        className="font-mono text-[11px] rounded-full border border-[#d8ded8] bg-white px-2 py-1 text-[#68746f]"
-                      >
-                        {taskStatuses.map((status) => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
+                        options={taskStatuses}
+                        onChange={(status) => handleTaskStatus(task, status)}
+                      />
                       {task.status === 'done' && <Check className="size-3.5 text-[#4f8f7a]" />}
                     </div>
                   </div>

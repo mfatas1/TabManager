@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional, Tuple
 import requests
 from bs4 import BeautifulSoup
@@ -16,6 +16,7 @@ from backend.schemas import (
     LinkAddToProject,
     LinkCreate,
     LinkResponse,
+    LinkUpdate,
     ProjectCreate,
     ProjectLinkResponse,
     ProjectLinkUpdate,
@@ -441,11 +442,29 @@ def create_link(link: LinkCreate, db: Session = Depends(get_db)):
 @app.get("/links", response_model=List[LinkResponse])
 def get_links(db: Session = Depends(get_db)):
     """
-    Get all saved links.
-    Returns a list of all links in the database.
+    Get all saved links, with project memberships eagerly loaded.
     """
-    links = db.query(Link).all()
-    return links
+    links = (
+        db.query(Link)
+        .options(joinedload(Link.project_links).joinedload(ProjectLink.project))
+        .all()
+    )
+    result = []
+    for link in links:
+        result.append({
+            "id": link.id,
+            "url": link.url,
+            "title": link.title,
+            "summary": link.summary,
+            "date_saved": link.date_saved,
+            "tags": link.tags,
+            "projects": [
+                {"id": pl.project.id, "name": pl.project.name}
+                for pl in link.project_links
+                if pl.project
+            ],
+        })
+    return result
 
 
 @app.get("/projects", response_model=List[ProjectSummaryResponse])
@@ -700,6 +719,23 @@ def reprocess_link(link_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Link not found")
 
     return analyze_and_apply_link(db, link)
+
+
+@app.patch("/links/{link_id}", response_model=LinkResponse)
+def update_link(link_id: int, update: LinkUpdate, db: Session = Depends(get_db)):
+    """
+    Manually update a link's title and/or summary.
+    """
+    link = db.query(Link).filter(Link.id == link_id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    if update.title is not None:
+        link.title = update.title
+    if update.summary is not None:
+        link.summary = update.summary
+    db.commit()
+    db.refresh(link)
+    return link
 
 
 @app.delete("/links/{link_id}", status_code=204)
