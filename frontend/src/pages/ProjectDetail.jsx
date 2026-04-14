@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, ExternalLink, FolderKanban, Plus, Trash2 } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Archive, ArchiveRestore, ArrowLeft, Check, ExternalLink, FolderKanban, Plus, Trash2 } from 'lucide-react';
+import StatusPicker from '../components/StatusPicker';
+import ConfirmModal from '../components/ConfirmModal';
 import {
   addUrlToProject,
   createTask,
+  deleteProject,
   deleteTask,
   getProject,
   removeLinkFromProject,
+  updateProject,
   updateProjectLink,
   updateTask,
 } from '../api/projects';
@@ -25,8 +29,14 @@ function getTopics(tags) {
   });
 }
 
+// localStorage keys for "don't ask again" per action
+const SKIP_REMOVE_LINK  = 'folio_skip_remove_link_confirm';
+const SKIP_DELETE_TASK  = 'folio_skip_delete_task_confirm';
+const SKIP_DELETE_PROJECT = 'folio_skip_delete_project_confirm';
+
 export default function ProjectDetail() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +45,9 @@ export default function ProjectDetail() {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [creatingTask, setCreatingTask] = useState(false);
+
+  // confirmModal: null | { action, id?, skipKey, title, message, confirmLabel, icon }
+  const [confirmModal, setConfirmModal] = useState(null);
 
   const links = useMemo(() => project?.project_links || [], [project]);
   const tasks = useMemo(() => project?.tasks || [], [project]);
@@ -97,20 +110,86 @@ export default function ProjectDetail() {
     await fetchProject();
   };
 
-  const handleRemoveLink = async (linkId) => {
-    if (!window.confirm('Remove this link from the project?')) return;
-    await removeLinkFromProject(projectId, linkId);
-    await fetchProject();
+  const handleRemoveLink = (linkId) => {
+    if (localStorage.getItem(SKIP_REMOVE_LINK) === 'true') {
+      removeLinkFromProject(projectId, linkId).then(() => fetchProject());
+      return;
+    }
+    setConfirmModal({
+      action: 'removeLink',
+      id: linkId,
+      skipKey: SKIP_REMOVE_LINK,
+      title: 'Remove link?',
+      message: 'This will remove the link from this project. The link stays in your library.',
+      confirmLabel: 'Remove',
+      icon: 'remove',
+    });
+  };
+
+  const handleDeleteTask = (taskId) => {
+    if (localStorage.getItem(SKIP_DELETE_TASK) === 'true') {
+      deleteTask(taskId).then(() => fetchProject());
+      return;
+    }
+    setConfirmModal({
+      action: 'deleteTask',
+      id: taskId,
+      skipKey: SKIP_DELETE_TASK,
+      title: 'Delete task?',
+      message: 'This task will be permanently removed from the project.',
+      confirmLabel: 'Delete',
+      icon: 'trash',
+    });
+  };
+
+  const handleArchiveToggle = async () => {
+    const newStatus = project.status === 'active' ? 'archived' : 'active';
+    try {
+      await updateProject(projectId, { status: newStatus });
+      await fetchProject();
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Failed to update project');
+    }
+  };
+
+  const handleDeleteProject = () => {
+    if (localStorage.getItem(SKIP_DELETE_PROJECT) === 'true') {
+      deleteProject(projectId).then(() => navigate('/projects'));
+      return;
+    }
+    setConfirmModal({
+      action: 'deleteProject',
+      skipKey: SKIP_DELETE_PROJECT,
+      title: 'Delete project?',
+      message: 'This will permanently delete the project and all its tasks. Your saved links will remain in the library.',
+      confirmLabel: 'Delete project',
+      icon: 'trash',
+    });
+  };
+
+  const handleModalConfirm = async (dontAskAgain) => {
+    if (!confirmModal) return;
+    const { action, id, skipKey } = confirmModal;
+    if (dontAskAgain) localStorage.setItem(skipKey, 'true');
+    setConfirmModal(null);
+    try {
+      if (action === 'removeLink') {
+        await removeLinkFromProject(projectId, id);
+        await fetchProject();
+      } else if (action === 'deleteTask') {
+        await deleteTask(id);
+        await fetchProject();
+      } else if (action === 'deleteProject') {
+        await deleteProject(projectId);
+        navigate('/projects');
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Action failed');
+    }
   };
 
   const handleTaskStatus = async (task, status) => {
     await updateTask(task.id, { status });
-    await fetchProject();
-  };
-
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm('Delete this task?')) return;
-    await deleteTask(taskId);
     await fetchProject();
   };
 
@@ -157,15 +236,51 @@ export default function ProjectDetail() {
                 <p className="max-w-xl text-sm text-[#68746f] leading-relaxed">{project.description}</p>
               )}
             </div>
-            <div className="flex gap-2 font-mono text-[11px] text-[#68746f]">
-              <span className="rounded-full border border-[#d8ded8] px-3 py-1">{links.length} links</span>
-              <span className="rounded-full border border-[#d8ded8] px-3 py-1">{tasks.length} tasks</span>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex gap-2 font-mono text-[11px] text-[#68746f]">
+                <span className="rounded-full border border-[#d8ded8] px-3 py-1">{links.length} links</span>
+                <span className="rounded-full border border-[#d8ded8] px-3 py-1">{tasks.length} tasks</span>
+              </div>
+              <button
+                onClick={handleArchiveToggle}
+                className={`flex items-center gap-1.5 p-2 rounded-lg border transition-all text-sm font-mono ${
+                  project.status === 'archived'
+                    ? 'border-[#c8d8cf] bg-[#edf4ef] text-[#4f8f7a] hover:bg-[#dceae2]'
+                    : 'border-[#d8ded8] bg-white text-[#9aa39f] hover:text-[#4f8f7a] hover:border-[#c8d8cf] hover:bg-[#f7faf8]'
+                }`}
+                title={project.status === 'archived' ? 'Unarchive project' : 'Archive project'}
+              >
+                {project.status === 'archived'
+                  ? <><ArchiveRestore className="size-4" /><span className="text-[11px] tracking-wide pr-0.5">Unarchive</span></>
+                  : <Archive className="size-4" />
+                }
+              </button>
+              <button
+                onClick={handleDeleteProject}
+                className="p-2 rounded-lg border border-[#d8ded8] bg-white text-[#9aa39f] hover:text-red-400 hover:border-red-200 hover:bg-red-50 transition-all"
+                title="Delete project"
+              >
+                <Trash2 className="size-4" />
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-10">
+        {project.status === 'archived' && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#f7f8f5] border border-[#dfe5df] mb-6">
+            <Archive className="size-4 text-[#9aa39f] flex-shrink-0" />
+            <p className="text-sm text-[#7d8984]">
+              This project is archived and read-only.{' '}
+              <button onClick={handleArchiveToggle} className="text-[#4f8f7a] hover:text-[#315f56] underline underline-offset-2 transition-colors">
+                Unarchive it
+              </button>{' '}
+              to make changes.
+            </p>
+          </div>
+        )}
+
         {error && (
           <div className="font-mono text-xs text-red-400/80 px-4 py-3 rounded-lg bg-red-500/8 border border-red-500/15 mb-6">
             Error: {error}
@@ -234,15 +349,11 @@ export default function ProjectDetail() {
                     )}
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <select
+                      <StatusPicker
                         value={projectLink.status}
-                        onChange={(e) => handleProjectLinkStatus(projectLink, e.target.value)}
-                        className="font-mono text-[11px] rounded-full border border-[#d8ded8] bg-white px-3 py-1 text-[#68746f]"
-                      >
-                        {linkStatuses.map((status) => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
+                        options={linkStatuses}
+                        onChange={(status) => handleProjectLinkStatus(projectLink, status)}
+                      />
 
                       {topics.map((tag) => {
                         const tagName = getTagName(tag);
@@ -313,15 +424,11 @@ export default function ProjectDetail() {
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <select
+                      <StatusPicker
                         value={task.status}
-                        onChange={(e) => handleTaskStatus(task, e.target.value)}
-                        className="font-mono text-[11px] rounded-full border border-[#d8ded8] bg-white px-2 py-1 text-[#68746f]"
-                      >
-                        {taskStatuses.map((status) => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
+                        options={taskStatuses}
+                        onChange={(status) => handleTaskStatus(task, status)}
+                      />
                       {task.status === 'done' && <Check className="size-3.5 text-[#4f8f7a]" />}
                     </div>
                   </div>
@@ -331,6 +438,17 @@ export default function ProjectDetail() {
           </aside>
         </div>
       </div>
+
+      {confirmModal && (
+        <ConfirmModal
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmLabel={confirmModal.confirmLabel}
+          icon={confirmModal.icon}
+          onConfirm={handleModalConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
     </div>
   );
 }

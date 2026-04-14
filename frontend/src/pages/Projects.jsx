@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FolderKanban, Plus } from 'lucide-react';
-import { createProject, getProjects } from '../api/projects';
+import { Archive, ArchiveRestore, ChevronDown, FolderKanban, Plus, Trash2 } from 'lucide-react';
+import { createProject, deleteProject, getProjects, updateProject } from '../api/projects';
+import ConfirmModal from '../components/ConfirmModal';
+
+const SKIP_DELETE_PROJECT = 'folio_skip_delete_project_confirm';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -10,6 +13,11 @@ export default function Projects() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creating, setCreating] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
+
+  const activeProjects   = useMemo(() => projects.filter(p => p.status === 'active'),   [projects]);
+  const archivedProjects = useMemo(() => projects.filter(p => p.status === 'archived'), [projects]);
 
   const fetchProjects = async () => {
     try {
@@ -27,6 +35,44 @@ export default function Projects() {
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  const handleArchiveToggle = async (e, project) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const newStatus = project.status === 'active' ? 'archived' : 'active';
+      await updateProject(project.id, { status: newStatus });
+      await fetchProjects();
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Failed to update project');
+    }
+  };
+
+  const handleDeleteClick = (e, projectId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (localStorage.getItem(SKIP_DELETE_PROJECT) === 'true') {
+      executeDelete(projectId);
+      return;
+    }
+    setConfirmDeleteId(projectId);
+  };
+
+  const executeDelete = async (projectId) => {
+    try {
+      await deleteProject(projectId);
+      await fetchProjects();
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || 'Failed to delete project');
+    } finally {
+      setConfirmDeleteId(null);
+    }
+  };
+
+  const handleConfirmDelete = (dontAskAgain) => {
+    if (dontAskAgain) localStorage.setItem(SKIP_DELETE_PROJECT, 'true');
+    executeDelete(confirmDeleteId);
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -47,6 +93,54 @@ export default function Projects() {
       setCreating(false);
     }
   };
+
+  const ProjectCard = ({ project, archived = false }) => (
+    <div className={`group relative rounded-lg border bg-white transition-all ${
+      archived
+        ? 'border-[#e8ece8] opacity-60 hover:opacity-90'
+        : 'border-[#dfe5df] hover:border-[#b7cabe] hover:-translate-y-0.5'
+    }`}>
+      <Link to={`/projects/${project.id}`} className="block p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h2 className={`font-display text-base font-semibold leading-snug ${archived ? 'text-[#7d8984]' : 'text-[#26312d]'}`}>
+            {project.name}
+          </h2>
+        </div>
+        {project.description && (
+          <p className="text-sm text-[#68746f] leading-relaxed line-clamp-2 mb-4">
+            {project.description}
+          </p>
+        )}
+        <div className="flex gap-2 font-mono text-[11px] text-[#7d8984]">
+          <span>{project.link_count} links</span>
+          <span>·</span>
+          <span>{project.task_count} tasks</span>
+        </div>
+      </Link>
+
+      {/* Hover actions */}
+      <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
+        <button
+          onClick={(e) => handleArchiveToggle(e, project)}
+          className={`p-1.5 rounded-lg transition-colors ${
+            archived
+              ? 'text-[#4f8f7a] hover:bg-[#edf4ef]'
+              : 'text-[#9aa39f] hover:text-[#4f8f7a] hover:bg-[#edf4ef]'
+          }`}
+          title={archived ? 'Unarchive project' : 'Archive project'}
+        >
+          {archived ? <ArchiveRestore className="size-3.5" /> : <Archive className="size-3.5" />}
+        </button>
+        <button
+          onClick={(e) => handleDeleteClick(e, project.id)}
+          className="p-1.5 rounded-lg text-[#9aa39f] hover:text-red-400 hover:bg-red-50 transition-colors"
+          title="Delete project"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
@@ -124,37 +218,55 @@ export default function Projects() {
           </div>
         )}
 
-        {!loading && projects.length > 0 && (
+        {/* Active projects */}
+        {!loading && activeProjects.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <Link
-                key={project.id}
-                to={`/projects/${project.id}`}
-                className="group rounded-lg border border-[#dfe5df] bg-white p-5 hover:border-[#b7cabe] hover:-translate-y-0.5 transition-all"
-              >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h2 className="font-display text-base font-semibold text-[#26312d] leading-snug">
-                    {project.name}
-                  </h2>
-                  <span className="font-mono text-[10px] rounded-full border border-[#d8ded8] px-2 py-0.5 text-[#68746f]">
-                    {project.status}
-                  </span>
-                </div>
-                {project.description && (
-                  <p className="text-sm text-[#68746f] leading-relaxed line-clamp-2 mb-4">
-                    {project.description}
-                  </p>
-                )}
-                <div className="flex gap-2 font-mono text-[11px] text-[#7d8984]">
-                  <span>{project.link_count} links</span>
-                  <span>·</span>
-                  <span>{project.task_count} tasks</span>
-                </div>
-              </Link>
+            {activeProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         )}
+
+        {!loading && activeProjects.length === 0 && projects.length > 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <p className="text-sm text-[#7d8984]">All projects are archived.</p>
+          </div>
+        )}
+
+        {/* Archived projects — collapsible */}
+        {!loading && archivedProjects.length > 0 && (
+          <div className="mt-10">
+            <button
+              onClick={() => setShowArchived(v => !v)}
+              className="flex items-center gap-2 font-mono text-[11px] text-[#7d8984] hover:text-[#315f56] transition-colors mb-4 group"
+            >
+              <Archive className="size-3.5" />
+              <span className="uppercase tracking-[0.12em]">Archived</span>
+              <span className="text-[#b0bab5]">{archivedProjects.length}</span>
+              <ChevronDown className={`size-3.5 transition-transform ${showArchived ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showArchived && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {archivedProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} archived />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {confirmDeleteId !== null && (
+        <ConfirmModal
+          title="Delete project?"
+          message="This will permanently delete the project and all its tasks. Your saved links will remain in the library."
+          confirmLabel="Delete project"
+          icon="trash"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

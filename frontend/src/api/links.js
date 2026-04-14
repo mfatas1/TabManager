@@ -22,3 +22,14 @@ export const saveLink = (url) => axios.post(`${BASE_URL}/links`, { url });
  * @returns {Promise} Axios promise
  */
 export const deleteLink = (linkId) => axios.delete(`${BASE_URL}/links/${linkId}`);
+
+/**
+ * Update a link's title and/or summary
+ * @param {number} linkId - The ID of the link to update
+ * @param {{ title?: string, summary?: string }} data
+ */
+export const updateLink = (linkId, data) => axios.patch(`${BASE_URL}/links/${linkId}`, data);
+
+export const addTagToLink = (linkId, data) => axios.post(`${BASE_URL}/links/${linkId}/tags`, data);
+
+export const removeTagFromLink = (linkId, tagId) => axios.delete(`${BASE_URL}/links/${linkId}/tags/${tagId}`);

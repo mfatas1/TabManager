@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional, Tuple
 import requests
 from bs4 import BeautifulSoup
@@ -16,6 +16,9 @@ from backend.schemas import (
     LinkAddToProject,
     LinkCreate,
     LinkResponse,
+    LinkUpdate,
+    TagAddRequest,
+    TagResponse,
     ProjectCreate,
     ProjectLinkResponse,
     ProjectLinkUpdate,
@@ -441,11 +444,29 @@ def create_link(link: LinkCreate, db: Session = Depends(get_db)):
 @app.get("/links", response_model=List[LinkResponse])
 def get_links(db: Session = Depends(get_db)):
     """
-    Get all saved links.
-    Returns a list of all links in the database.
+    Get all saved links, with project memberships eagerly loaded.
     """
-    links = db.query(Link).all()
-    return links
+    links = (
+        db.query(Link)
+        .options(joinedload(Link.project_links).joinedload(ProjectLink.project))
+        .all()
+    )
+    result = []
+    for link in links:
+        result.append({
+            "id": link.id,
+            "url": link.url,
+            "title": link.title,
+            "summary": link.summary,
+            "date_saved": link.date_saved,
+            "tags": link.tags,
+            "projects": [
+                {"id": pl.project.id, "name": pl.project.name}
+                for pl in link.project_links
+                if pl.project
+            ],
+        })
+    return result
 
 
 @app.get("/projects", response_model=List[ProjectSummaryResponse])
@@ -700,6 +721,78 @@ def reprocess_link(link_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Link not found")
 
     return analyze_and_apply_link(db, link)
+
+
+@app.patch("/links/{link_id}", response_model=LinkResponse)
+def update_link(link_id: int, update: LinkUpdate, db: Session = Depends(get_db)):
+    """
+    Manually update a link's title and/or summary.
+    """
+    link = db.query(Link).filter(Link.id == link_id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    if update.title is not None:
+        link.title = update.title
+    if update.summary is not None:
+        link.summary = update.summary
+    db.commit()
+    db.refresh(link)
+    return link
+
+
+@app.get("/tags", response_model=List[TagResponse])
+def get_all_tags(db: Session = Depends(get_db)):
+    """
+    Return all tags sorted by name, for autocomplete.
+    """
+    return db.query(Tag).order_by(Tag.name).all()
+
+
+@app.post("/links/{link_id}/tags", response_model=TagResponse, status_code=201)
+def add_tag_to_link(link_id: int, tag_data: TagAddRequest, db: Session = Depends(get_db)):
+    """
+    Add a tag to a link. Finds an existing tag with that name+type or creates one.
+    """
+    link = db.query(Link).filter(Link.id == link_id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    tag_name = tag_data.name.strip().lower()
+    tag = db.query(Tag).filter(Tag.name == tag_name, Tag.tag_type == tag_data.tag_type).first()
+    if not tag:
+        tag = Tag(name=tag_name, tag_type=tag_data.tag_type)
+        db.add(tag)
+        db.flush()
+
+    if tag not in link.tags:
+        link.tags.append(tag)
+        db.commit()
+
+    db.refresh(tag)
+    return tag
+
+
+@app.delete("/links/{link_id}/tags/{tag_id}", status_code=204)
+def remove_tag_from_link(link_id: int, tag_id: int, db: Session = Depends(get_db)):
+    """
+    Remove a tag from a link. Deletes the tag entirely if no other links use it.
+    """
+    link = db.query(Link).filter(Link.id == link_id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    if tag in link.tags:
+        link.tags.remove(tag)
+        db.flush()
+        if len(tag.links) == 0:
+            db.delete(tag)
+        db.commit()
+
+    return None
 
 
 @app.delete("/links/{link_id}", status_code=204)

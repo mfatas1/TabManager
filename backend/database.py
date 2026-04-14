@@ -9,9 +9,12 @@ load_dotenv()
 # Get database URL from environment variable
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://username:password@localhost:5432/tabmanager")
 
-# Create SQLAlchemy engine
-# This is the connection pool to your PostgreSQL database
-engine = create_engine(DATABASE_URL)
+# Supabase (and most hosted Postgres providers) require SSL.
+# We pass connect_args only when connecting to a remote host.
+_is_remote = "localhost" not in DATABASE_URL and "127.0.0.1" not in DATABASE_URL
+_connect_args = {"sslmode": "require"} if _is_remote else {}
+
+engine = create_engine(DATABASE_URL, connect_args=_connect_args)
 
 # SessionLocal is a factory for creating database sessions
 # Each request will get its own session
