@@ -13,10 +13,12 @@ class LinkCreate(BaseModel):
 
 class LinkUpdate(BaseModel):
     """
-    Schema for manually editing a link's title or summary.
+    Schema for manually editing a link's title, summary, topics, or keywords.
     """
     title: Optional[str] = None
     summary: Optional[str] = None
+    topics: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
 
 
 class LinkAddToProject(BaseModel):
@@ -86,6 +88,7 @@ class TaskCreate(BaseModel):
     status: str = "todo"
     due_date: Optional[datetime] = None
     linked_link_id: Optional[int] = None
+    linked_link_ids: Optional[List[int]] = None
 
 
 class TaskUpdate(BaseModel):
@@ -94,6 +97,7 @@ class TaskUpdate(BaseModel):
     status: Optional[str] = None
     due_date: Optional[datetime] = None
     linked_link_id: Optional[int] = None
+    linked_link_ids: Optional[List[int]] = None
 
 
 class TaskResponse(BaseModel):
@@ -107,6 +111,7 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     linked_link: Optional[LinkResponse] = None
+    linked_links: List[LinkResponse] = []
 
     class Config:
         from_attributes = True

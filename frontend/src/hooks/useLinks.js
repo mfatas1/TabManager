@@ -11,9 +11,9 @@ export const useLinks = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchLinks = async () => {
+  const fetchLinks = async ({ showLoading = false } = {}) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       setError(null);
       const response = await getLinks();
       setLinks(response.data);
@@ -21,13 +21,13 @@ export const useLinks = () => {
       setError(err.message || 'Failed to fetch links');
       setLinks([]);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   // Fetch links when component mounts
   useEffect(() => {
-    fetchLinks();
+    fetchLinks({ showLoading: true });
   }, []);
 
   return {

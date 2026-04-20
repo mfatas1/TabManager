@@ -12,6 +12,13 @@ link_tags = Table(
     Column('tag_id', Integer, ForeignKey('tags.id'), primary_key=True)
 )
 
+task_links = Table(
+    'task_links',
+    Base.metadata,
+    Column('task_id', Integer, ForeignKey('tasks.id'), primary_key=True),
+    Column('link_id', Integer, ForeignKey('links.id'), primary_key=True)
+)
+
 
 class Link(Base):
     """
@@ -20,7 +27,8 @@ class Link(Base):
     __tablename__ = "links"
     
     id = Column(Integer, primary_key=True, index=True)
-    url = Column(String, unique=True, index=True, nullable=False)
+    user_id = Column(String, index=True, nullable=True)
+    url = Column(String, index=True, nullable=False)
     title = Column(String, nullable=True)
     summary = Column(String, nullable=True)
     date_saved = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -30,6 +38,11 @@ class Link(Base):
     tags = relationship("Tag", secondary=link_tags, back_populates="links")
     project_links = relationship("ProjectLink", back_populates="link", cascade="all, delete-orphan")
     tasks = relationship("Task", back_populates="linked_link")
+    linked_tasks = relationship("Task", secondary=task_links, back_populates="linked_links")
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'url', name='uq_link_user_url'),
+    )
 
 
 class Tag(Base):
@@ -39,13 +52,13 @@ class Tag(Base):
     __tablename__ = "tags"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True, nullable=True)
     name = Column(String, nullable=False)
     tag_type = Column(String, nullable=False, default='specific')  # 'specific' or 'broad'
     
-    # Create a unique constraint on name + tag_type combination
-    # This allows the same tag name to exist as both specific and broad
+    # This allows each user to have the same tag taxonomy independently.
     __table_args__ = (
-        UniqueConstraint('name', 'tag_type', name='uq_tag_name_type'),
+        UniqueConstraint('user_id', 'name', 'tag_type', name='uq_tag_user_name_type'),
     )
     
     # This creates the many-to-many relationship with links
@@ -60,6 +73,7 @@ class Project(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True, nullable=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     status = Column(String, nullable=False, default='active')  # active or archived
@@ -94,6 +108,7 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True, nullable=True)
     project_id = Column(Integer, ForeignKey('projects.id'), nullable=False)
     linked_link_id = Column(Integer, ForeignKey('links.id'), nullable=True)
     title = Column(String, nullable=False)
@@ -105,3 +120,4 @@ class Task(Base):
 
     project = relationship("Project", back_populates="tasks")
     linked_link = relationship("Link", back_populates="tasks")
+    linked_links = relationship("Link", secondary=task_links, back_populates="linked_tasks")

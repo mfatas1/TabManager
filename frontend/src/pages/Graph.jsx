@@ -6,6 +6,7 @@ import { useLinks } from '../hooks/useLinks';
 import { buildGraphData } from '../utils/graphTransform';
 import { applyForceLayout } from '../utils/forceLayout';
 import { addLinkToProject, getProjects } from '../api/projects';
+import ProjectDropdown from '../components/ProjectDropdown';
 import LinkNode from '../components/LinkNode';
 import TagNode from '../components/TagNode';
 import { X, ExternalLink, Tag, Calendar, Network } from 'lucide-react';
@@ -309,26 +310,21 @@ export default function Graph() {
 
                 {projects.length > 0 && (
                   <div>
-                    <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Project</label>
+                    <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Add to project</label>
                     <div className="flex gap-2">
-                      <select
+                      <ProjectDropdown
+                        projects={projects}
                         value={selectedProjectId}
-                        onChange={(e) => {
-                          setSelectedProjectId(e.target.value);
+                        onChange={(value) => {
+                          setSelectedProjectId(value);
                           setProjectMessage(null);
                         }}
-                        className="min-w-0 flex-1 px-3 py-2 text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0]"
-                      >
-                        <option value="">Choose project</option>
-                        {projects.map((project) => (
-                          <option key={project.id} value={project.id}>{project.name}</option>
-                        ))}
-                      </select>
+                      />
                       <button
                         type="button"
                         onClick={handleAddToProject}
                         disabled={!selectedProjectId}
-                        className="px-3 py-2 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed"
+                        className="px-4 py-2.5 text-sm font-semibold bg-[#315f56] text-white rounded-lg hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                       >
                         Add
                       </button>

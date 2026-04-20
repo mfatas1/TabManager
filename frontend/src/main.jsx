@@ -10,6 +10,9 @@ import Graph from './pages/Graph.jsx';
 import Projects from './pages/Projects.jsx';
 import ProjectDetail from './pages/ProjectDetail.jsx';
 import { NavBar } from './components/ui/tubelight-navbar.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import { AuthProvider } from './auth/AuthContext.jsx';
+import ProtectedRoute from './auth/ProtectedRoute.jsx';
 
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
@@ -24,10 +27,11 @@ export function AppLayout() {
       <NavBar items={navItems} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/library" element={<LinkList />} />
-        <Route path="/graph" element={<Graph />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:projectId" element={<ProjectDetail />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/library" element={<ProtectedRoute><LinkList /></ProtectedRoute>} />
+        <Route path="/graph" element={<ProtectedRoute><Graph /></ProtectedRoute>} />
+        <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+        <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
       </Routes>
     </div>
   );
@@ -35,8 +39,10 @@ export function AppLayout() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <AppLayout />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
+    </AuthProvider>
   </StrictMode>,
 );

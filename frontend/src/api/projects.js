@@ -1,36 +1,33 @@
-import axios from 'axios';
+import { apiClient } from '../lib/apiClient';
 
-const API_HOST = window.location.hostname || 'localhost';
-const BASE_URL = import.meta.env.VITE_API_URL || `http://${API_HOST}:8000`;
+export const getProjects = () => apiClient.get('/projects');
 
-export const getProjects = () => axios.get(`${BASE_URL}/projects`);
+export const createProject = (project) => apiClient.post('/projects', project);
 
-export const createProject = (project) => axios.post(`${BASE_URL}/projects`, project);
+export const getProject = (projectId) => apiClient.get(`/projects/${projectId}`);
 
-export const getProject = (projectId) => axios.get(`${BASE_URL}/projects/${projectId}`);
+export const updateProject = (projectId, updates) => apiClient.patch(`/projects/${projectId}`, updates);
 
-export const updateProject = (projectId, updates) => axios.patch(`${BASE_URL}/projects/${projectId}`, updates);
-
-export const deleteProject = (projectId) => axios.delete(`${BASE_URL}/projects/${projectId}`);
+export const deleteProject = (projectId) => apiClient.delete(`/projects/${projectId}`);
 
 export const addLinkToProject = (projectId, linkId, data = {}) =>
-  axios.post(`${BASE_URL}/projects/${projectId}/links`, {
+  apiClient.post(`/projects/${projectId}/links`, {
     link_id: linkId,
     ...data,
   });
 
 export const addUrlToProject = (projectId, url) =>
-  axios.post(`${BASE_URL}/projects/${projectId}/links/from-url`, { url });
+  apiClient.post(`/projects/${projectId}/links/from-url`, { url });
 
 export const updateProjectLink = (projectId, linkId, updates) =>
-  axios.patch(`${BASE_URL}/projects/${projectId}/links/${linkId}`, updates);
+  apiClient.patch(`/projects/${projectId}/links/${linkId}`, updates);
 
 export const removeLinkFromProject = (projectId, linkId) =>
-  axios.delete(`${BASE_URL}/projects/${projectId}/links/${linkId}`);
+  apiClient.delete(`/projects/${projectId}/links/${linkId}`);
 
 export const createTask = (projectId, task) =>
-  axios.post(`${BASE_URL}/projects/${projectId}/tasks`, task);
+  apiClient.post(`/projects/${projectId}/tasks`, task);
 
-export const updateTask = (taskId, updates) => axios.patch(`${BASE_URL}/tasks/${taskId}`, updates);
+export const updateTask = (taskId, updates) => apiClient.patch(`/tasks/${taskId}`, updates);
 
-export const deleteTask = (taskId) => axios.delete(`${BASE_URL}/tasks/${taskId}`);
+export const deleteTask = (taskId) => apiClient.delete(`/tasks/${taskId}`);

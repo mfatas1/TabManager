@@ -1,60 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLinks } from '../hooks/useLinks';
-import { saveLink, deleteLink, updateLink } from '../api/links';
+import { saveLink, deleteLink, getTags, updateLink } from '../api/links';
 import { addLinkToProject, getProjects } from '../api/projects';
-import { Plus, X, ExternalLink, Trash2, BookOpen, Calendar, Search, Pencil, ChevronDown, FolderOpen } from 'lucide-react';
-
-function ProjectDropdown({ projects, value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const selected = projects.find(p => String(p.id) === String(value));
-
-  return (
-    <div ref={ref} className="relative flex-1 min-w-0">
-      <button
-        type="button"
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm border border-[#d8ded8] rounded-lg bg-white text-left hover:border-[#8baea0] transition-colors"
-      >
-        <span className={selected ? 'text-[#26312d]' : 'text-[#9aa39f]'}>
-          {selected ? selected.name : 'Choose project'}
-        </span>
-        <ChevronDown className={`size-3.5 text-[#9aa39f] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-
-      {open && (
-        <div className="absolute z-50 top-full mt-1.5 left-0 right-0 rounded-xl border border-[#dfe5df] bg-white shadow-lg shadow-black/8 py-1.5 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => { onChange(''); setOpen(false); }}
-            className="w-full text-left px-3 py-2 text-sm text-[#9aa39f] hover:bg-[#f7f8f5] transition-colors"
-          >
-            Choose project
-          </button>
-          {projects.map(p => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => { onChange(String(p.id)); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 flex items-center gap-2.5 text-sm transition-colors hover:bg-[#f7f8f5] ${String(value) === String(p.id) ? 'text-[#315f56] font-medium' : 'text-[#26312d]'}`}
-            >
-              <FolderOpen className="size-3.5 text-[#4f8f7a] flex-shrink-0" />
-              {p.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import ConfirmDialog from '../components/ConfirmDialog';
+import ProjectDropdown from '../components/ProjectDropdown';
+import TagEditor from '../components/TagEditor';
+import { Plus, X, ExternalLink, Trash2, BookOpen, Calendar, Search, Pencil, FolderOpen } from 'lucide-react';
 
 function LinkList() {
   const { links, loading, error, refetch } = useLinks();
@@ -67,6 +19,9 @@ function LinkList() {
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [projectMessage, setProjectMessage] = useState(null);
+  const [allTags, setAllTags] = useState([]);
+  const [pendingDeleteLink, setPendingDeleteLink] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
   const selectedTag = searchParams.get('tag');
   const highlightedLinkId = searchParams.get('highlight');
@@ -76,6 +31,8 @@ function LinkList() {
   const [editingLink, setEditingLink] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSummary, setEditSummary] = useState('');
+  const [editTopics, setEditTopics] = useState([]);
+  const [editKeywords, setEditKeywords] = useState([]);
   const [editSaving, setEditSaving] = useState(false);
 
   const filteredLinks = useMemo(() => {
@@ -142,6 +99,16 @@ function LinkList() {
 
   const getTagName = (tag) => (typeof tag === 'string' ? tag : tag.name);
 
+  const topicOptions = useMemo(
+    () => allTags.filter((tag) => tag.tag_type === 'broad').map((tag) => tag.name),
+    [allTags]
+  );
+
+  const keywordOptions = useMemo(
+    () => allTags.filter((tag) => tag.tag_type === 'specific').map((tag) => tag.name),
+    [allTags]
+  );
+
   const handleTagClick = (tagName, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -164,6 +131,18 @@ function LinkList() {
       }
     };
     fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await getTags();
+        setAllTags(response.data);
+      } catch {
+        setAllTags([]);
+      }
+    };
+    fetchTags();
   }, []);
 
   // Keep selectedLink in sync with fresh data after any refetch
@@ -209,18 +188,25 @@ function LinkList() {
     }
   };
 
-  const handleDelete = async (linkId, e) => {
+  const requestDelete = (link, e) => {
     e?.preventDefault();
     e?.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this link?')) return;
+    setActionError(null);
+    setPendingDeleteLink(link);
+  };
+
+  const handleDelete = async () => {
+    if (!pendingDeleteLink) return;
     try {
-      await deleteLink(linkId);
-      if (selectedLink && selectedLink.id === linkId) {
+      await deleteLink(pendingDeleteLink.id);
+      if (selectedLink && selectedLink.id === pendingDeleteLink.id) {
         setSelectedLink(null);
       }
+      setPendingDeleteLink(null);
       await refetch();
     } catch (err) {
-      alert(err.response?.data?.detail || err.message || 'Failed to delete link');
+      setActionError(err.response?.data?.detail || err.message || 'Failed to delete link');
+      setPendingDeleteLink(null);
     }
   };
 
@@ -230,20 +216,30 @@ function LinkList() {
     setEditingLink(link);
     setEditTitle(link.title || '');
     setEditSummary(link.summary || '');
+    setEditTopics(getBroadTags(link.tags).map(getTagName));
+    setEditKeywords(getSpecificTags(link.tags).map(getTagName));
   };
 
   const handleSaveEdit = async () => {
     if (!editingLink) return;
     try {
       setEditSaving(true);
-      await updateLink(editingLink.id, { title: editTitle, summary: editSummary });
+      setActionError(null);
+      await updateLink(editingLink.id, {
+        title: editTitle,
+        summary: editSummary,
+        topics: editTopics,
+        keywords: editKeywords,
+      });
       await refetch();
+      const tagsResponse = await getTags();
+      setAllTags(tagsResponse.data);
       if (selectedLink?.id === editingLink.id) {
         setSelectedLink(l => ({ ...l, title: editTitle, summary: editSummary }));
       }
       setEditingLink(null);
     } catch (err) {
-      alert(err.response?.data?.detail || err.message || 'Failed to save');
+      setActionError(err.response?.data?.detail || err.message || 'Failed to save changes');
     } finally {
       setEditSaving(false);
     }
@@ -337,6 +333,11 @@ function LinkList() {
 
       {/* ── Content ───────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-6 py-10">
+        {actionError && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 font-mono text-xs text-red-700">
+            {actionError}
+          </div>
+        )}
 
         {/* Search + Sort bar */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -505,7 +506,7 @@ function LinkList() {
                           <Pencil className="size-3.5" />
                         </button>
                         <button
-                          onClick={(e) => handleDelete(link.id, e)}
+                          onClick={(e) => requestDelete(link, e)}
                           className="p-1.5 rounded-lg hover:bg-red-500/10 text-[#9aa39f] hover:text-red-400 transition-colors"
                           title="Delete link"
                         >
@@ -573,7 +574,7 @@ function LinkList() {
       {/* ── Edit Modal ──────────────────────────────────────────── */}
       {editingLink && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm" onClick={() => setEditingLink(null)}>
-          <div className="w-full max-w-md bg-white rounded-xl border border-[#dfe5df] shadow-xl p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-white rounded-xl border border-[#dfe5df] shadow-xl p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="font-display text-lg font-semibold text-[#26312d] mb-1">Edit link</h2>
             <p className="font-mono text-[11px] text-[#9aa39f] mb-5 truncate">{editingLink.url}</p>
             <div className="space-y-4">
@@ -594,6 +595,18 @@ function LinkList() {
                   className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 resize-none transition-all"
                 />
               </div>
+              <TagEditor
+                label="Topics"
+                tags={editTopics}
+                options={topicOptions}
+                onChange={setEditTopics}
+              />
+              <TagEditor
+                label="Keywords"
+                tags={editKeywords}
+                options={keywordOptions}
+                onChange={setEditKeywords}
+              />
             </div>
             <div className="flex gap-2 mt-6">
               <button
@@ -619,13 +632,22 @@ function LinkList() {
         <div className="fixed top-0 right-0 w-[400px] max-w-[calc(100vw-24px)] h-full bg-[#f7f8f5] border-l border-[#dfe5df] z-50 flex flex-col shadow-sm">
           <div className="flex items-center justify-between px-6 py-5 border-b border-[#dfe5df]">
             <span className="font-mono text-[10px] tracking-[0.2em] text-[#9aa39f] uppercase">Link Details</span>
-            <button
-              onClick={closePanel}
-              className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[#7d8984] hover:text-[#26312d] transition-colors"
-              title="Close panel"
-            >
-              <X className="size-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => openEditModal(selectedLink, e)}
+                className="p-2 rounded-lg hover:bg-[#edf4ef] text-[#7d8984] hover:text-[#315f56] transition-colors"
+                title="Edit title, summary, topics, and keywords"
+              >
+                <Pencil className="size-4" />
+              </button>
+              <button
+                onClick={closePanel}
+                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[#7d8984] hover:text-[#26312d] transition-colors"
+                title="Close panel"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-6">
@@ -761,6 +783,18 @@ function LinkList() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDeleteLink)}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteLink(null);
+        }}
+        title="Delete this link?"
+        description={`This removes "${pendingDeleteLink?.title || pendingDeleteLink?.url || 'this link'}" from your library and any projects that use it.`}
+        confirmLabel="Delete link"
+        destructive
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -1,10 +1,16 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom"
+import { LogIn, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/auth/useAuth"
 
 export function NavBar({ items, className }) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const currentTag = searchParams.get('tag')
+  const { isAuthenticated, loading, signOut, user } = useAuth()
+
+  if (loading) return null
+  if (!isAuthenticated && (location.pathname === '/' || location.pathname === '/login')) return null
 
   // Determine active tab based on current route
   const activeTab = items.find(item => (
@@ -21,7 +27,7 @@ export function NavBar({ items, className }) {
       )}
     >
       <div className="flex items-center gap-1 bg-white/90 border border-[#d8ded8] backdrop-blur py-1 px-1 rounded-lg shadow-sm">
-        {items.map((item) => {
+        {isAuthenticated && items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name
 
@@ -43,6 +49,35 @@ export function NavBar({ items, className }) {
             </Link>
           )
         })}
+        <div className="mx-1 h-5 w-px bg-[#d8ded8]" />
+        {isAuthenticated ? (
+          <button
+            type="button"
+            onClick={signOut}
+            title={user?.email ? `Sign out ${user.email}` : 'Sign out'}
+            className="relative cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-[#68746f] transition-colors hover:text-[#26312d]"
+          >
+            <span className="hidden md:inline">Sign out</span>
+            <span className="md:hidden">
+              <LogOut size={18} strokeWidth={2.5} />
+            </span>
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className={cn(
+              "relative cursor-pointer rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+              location.pathname === '/login'
+                ? "bg-[#e7efea] text-[#315f56]"
+                : "text-[#68746f] hover:text-[#26312d]",
+            )}
+          >
+            <span className="hidden md:inline">Sign in</span>
+            <span className="md:hidden">
+              <LogIn size={18} strokeWidth={2.5} />
+            </span>
+          </Link>
+        )}
       </div>
     </div>
   )

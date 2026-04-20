@@ -10,6 +10,7 @@ import logging
 import re
 from dotenv import load_dotenv
 from openai import OpenAI
+from backend.auth import CurrentUser, get_current_user
 from backend.database import engine, Base, get_db
 from backend.models import Link, Project, ProjectLink, Tag, Task
 from backend.schemas import (
@@ -67,24 +68,104 @@ def get_openai_client():
 # or drop and recreate the database: dropdb tabmanager && createdb tabmanager
 Base.metadata.create_all(bind=engine)
 
-# Add tag_type column if it doesn't exist (for existing databases)
 from sqlalchemy import text
+
+
+def ensure_column(conn, table_name: str, column_name: str, definition: str):
+    result = conn.execute(text("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name=:table_name AND column_name=:column_name
+    """), {"table_name": table_name, "column_name": column_name})
+    if result.fetchone() is not None:
+        return
+
+    logger.info("Adding %s column to %s table...", column_name, table_name)
+    conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}"))
+
+
+def drop_single_column_unique_indexes(conn, table_name: str, column_name: str):
+    result = conn.execute(text("""
+        SELECT
+            indexrelid::regclass::text AS index_name,
+            pg_constraint.conname AS constraint_name
+        FROM pg_index
+        LEFT JOIN pg_constraint ON pg_constraint.conindid = pg_index.indexrelid
+        WHERE indrelid = to_regclass(:table_name)
+          AND indisunique
+          AND indnatts = 1
+          AND indkey[0] = (
+              SELECT attnum
+              FROM pg_attribute
+              WHERE attrelid = to_regclass(:table_name)
+                AND attname = :column_name
+          )
+    """), {"table_name": table_name, "column_name": column_name})
+    for row in result:
+        if row.constraint_name:
+            logger.info("Dropping old global unique constraint %s on %s", row.constraint_name, table_name)
+            conn.execute(text(f"ALTER TABLE {table_name} DROP CONSTRAINT IF EXISTS {row.constraint_name}"))
+        else:
+            logger.info("Dropping old global unique index %s", row.index_name)
+            conn.execute(text(f"DROP INDEX IF EXISTS {row.index_name}"))
+
+
+def drop_global_tag_unique_indexes(conn):
+    result = conn.execute(text("""
+        SELECT
+            indexrelid::regclass::text AS index_name,
+            pg_constraint.conname AS constraint_name
+        FROM pg_index
+        LEFT JOIN pg_constraint ON pg_constraint.conindid = pg_index.indexrelid
+        WHERE indrelid = to_regclass('tags')
+          AND indisunique
+          AND indnatts = 2
+          AND ARRAY(
+              SELECT attname::text
+              FROM unnest(indkey) WITH ORDINALITY AS cols(attnum, ordinality)
+              JOIN pg_attribute ON attrelid = to_regclass('tags')
+                AND pg_attribute.attnum = cols.attnum
+              ORDER BY ordinality
+          ) = ARRAY['name', 'tag_type']
+    """))
+    for row in result:
+        if row.constraint_name:
+            logger.info("Dropping old global unique tag constraint %s", row.constraint_name)
+            conn.execute(text(f"ALTER TABLE tags DROP CONSTRAINT IF EXISTS {row.constraint_name}"))
+        else:
+            logger.info("Dropping old global unique tag index %s", row.index_name)
+            conn.execute(text(f"DROP INDEX IF EXISTS {row.index_name}"))
+
+
 try:
     with engine.connect() as conn:
-        # Check if column exists
-        result = conn.execute(text("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='tags' AND column_name='tag_type'
-        """))
-        if result.fetchone() is None:
-            # Column doesn't exist, add it
-            logger.info("Adding tag_type column to tags table...")
-            conn.execute(text("ALTER TABLE tags ADD COLUMN tag_type VARCHAR DEFAULT 'specific'"))
-            conn.commit()
-            logger.info("✓ tag_type column added")
+        ensure_column(conn, "tags", "tag_type", "VARCHAR DEFAULT 'specific'")
+        for table_name in ("links", "tags", "projects", "tasks"):
+            ensure_column(conn, table_name, "user_id", "VARCHAR")
+            conn.execute(text(
+                f"CREATE INDEX IF NOT EXISTS ix_{table_name}_user_id ON {table_name} (user_id)"
+            ))
+        conn.execute(text("ALTER TABLE links DROP CONSTRAINT IF EXISTS links_url_key"))
+        conn.execute(text("ALTER TABLE links DROP CONSTRAINT IF EXISTS ix_links_url"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_links_url"))
+        conn.execute(text("ALTER TABLE tags DROP CONSTRAINT IF EXISTS uq_tag_name_type"))
+        conn.execute(text("ALTER TABLE tags DROP CONSTRAINT IF EXISTS ix_tags_name"))
+        conn.execute(text("DROP INDEX IF EXISTS ix_tags_name"))
+        drop_single_column_unique_indexes(conn, "links", "url")
+        drop_single_column_unique_indexes(conn, "tags", "name")
+        drop_global_tag_unique_indexes(conn)
+        conn.execute(text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_link_user_url "
+            "ON links (user_id, url) WHERE user_id IS NOT NULL"
+        ))
+        conn.execute(text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_tag_user_name_type "
+            "ON tags (user_id, name, tag_type) WHERE user_id IS NOT NULL"
+        ))
+        conn.commit()
+        logger.info("✓ Auth ownership columns are ready")
 except Exception as e:
-    logger.warning(f"Could not add tag_type column (this is OK if database is new): {e}")
+    logger.warning(f"Could not prepare database compatibility columns: {e}")
 
 app = FastAPI(title="TabManager API")
 
@@ -175,13 +256,14 @@ def analyze_page_with_llm(
     title: Optional[str],
     meta_description: Optional[str],
     page_text: Optional[str],
+    existing_topics: Optional[List[str]] = None,
 ) -> Tuple[Optional[str], List[str], List[str]]:
     """
     Use OpenAI API to generate a concise summary and two-level semantic tags.
     Returns (summary, specific_tags, broad_tags) tuple.
     - summary: 35-70 words, one paragraph, based on page content
-    - specific_tags: 3-4 specific descriptive tags for display
-    - broad_tags: 2-3 broad topic categories for graph connections
+    - specific_tags: 3-5 specific descriptive keywords for display
+    - broad_tags: 1-2 broad topic categories for graph connections
     """
     client = get_openai_client()
     if not client:
@@ -193,12 +275,15 @@ def analyze_page_with_llm(
         return (None, [], [])
     
     try:
+        topic_options = existing_topics or []
+        existing_topics_text = ", ".join(topic_options) if topic_options else "None yet"
+
         prompt = f"""Analyze the saved webpage below and return a compact JSON object.
 
 Your job:
 1. Write "summary": a concise, insightful summary of the actual page content.
-2. Write "specific": 3-4 narrow tags useful for recognizing this exact link.
-3. Write "broad": 2-3 broad topic tags useful for clustering related links in a graph.
+2. Write "specific": 3-5 narrow keyword tags useful for recognizing this exact link.
+3. Write "broad": 1-2 broad topic tags useful for clustering related links in a graph.
 
 Summary rules:
 - 35-70 words.
@@ -209,14 +294,28 @@ Summary rules:
 - Do not invent details that are not supported by the provided content.
 - If the content is sparse, summarize only what can be confidently inferred.
 
-Tag rules:
+Topic rules for "broad":
+- Return exactly 1-2 topics.
+- Topics should be library sections, not detailed descriptors.
+- Reuse an existing topic whenever it reasonably fits.
+- Create a new topic only when none of the existing topics fit.
+- Prefer stable, reusable fields like "machine-learning", "software-engineering", "physics", "startups", "finance", "climate", "neuroscience", "product-design", "mechanical-engineering", or "knowledge-management".
+- Do not use narrow concepts as topics. Examples that are too narrow for topics: "model-explainability", "startup-strategies", "algorithm-analysis", "geolocation", "sensor-technology", "momentum-gradient-descent".
+
+Keyword rules for "specific":
+- Return 3-5 keywords.
+- Keywords should be concrete and specific to the link.
+- Put narrow concepts here, e.g. "momentum-gradient-descent", "model-explainability", "geolocation", "convex-optimization", "sensor-technology".
+
+General tag rules:
 - Use lowercase kebab-case.
 - Avoid generic tags like "article", "website", "news", or "blog".
-- "specific" tags should be concrete, e.g. "attention-mechanism", "summer-2026-internship".
-- "broad" tags should be reusable categories, e.g. "machine-learning", "careers", "finance".
 
 Return only valid JSON in this exact shape:
 {{"summary": "35-70 word summary", "specific": ["tag-one"], "broad": ["tag-two"]}}
+
+Existing broad topics for this user's library:
+{existing_topics_text}
 
 URL: {url}
 Title: {title or 'N/A'}
@@ -260,8 +359,12 @@ Extracted page content:
             if "broad" in result and isinstance(result["broad"], list):
                 broad_tags = [normalize_tag(tag) for tag in result["broad"] if tag]
 
-            specific_tags = [tag for tag in specific_tags if tag][:4]
-            broad_tags = [tag for tag in broad_tags if tag][:3]
+            specific_tags = [tag for tag in specific_tags if tag][:5]
+            broad_tags = [tag for tag in broad_tags if tag][:2]
+            if not broad_tags and topic_options:
+                broad_tags = [topic_options[0]]
+            elif not broad_tags:
+                broad_tags = ["general-knowledge"]
             
             logger.info(f"✓ Generated summary: {generated_summary}")
             logger.info(f"✓ Generated {len(specific_tags)} specific tags: {specific_tags}")
@@ -283,7 +386,10 @@ Extracted page content:
         return (fallback_summary(title, meta_description, page_text), [], [])
 
 
-def scrape_url(url: str) -> Tuple[Optional[str], Optional[str], List[str], List[str]]:
+def scrape_url(
+    url: str,
+    existing_topics: Optional[List[str]] = None,
+) -> Tuple[Optional[str], Optional[str], List[str], List[str]]:
     """
     Scrape a URL and extract the title, model-written summary, and two-level tags using LLM.
     Returns (title, summary, specific_tags, broad_tags) tuple. 
@@ -315,6 +421,7 @@ def scrape_url(url: str) -> Tuple[Optional[str], Optional[str], List[str], List[
             title=title,
             meta_description=meta_description,
             page_text=page_text,
+            existing_topics=existing_topics,
         )
         
         return (title, summary, specific_tags, broad_tags)
@@ -324,19 +431,40 @@ def scrape_url(url: str) -> Tuple[Optional[str], Optional[str], List[str], List[
         return (None, None, [], [])
 
 
-def get_or_create_tag(db: Session, tag_name: str, tag_type: str) -> Tag:
+def user_owned_filter(model, user_id: str):
+    return model.user_id == user_id
+
+
+def get_or_create_tag(db: Session, tag_name: str, tag_type: str, user_id: Optional[str] = None) -> Tag:
     """
     Get an existing tag by name/type or create it.
     """
     db_tag = db.query(Tag).filter(
         Tag.name == tag_name,
-        Tag.tag_type == tag_type
+        Tag.tag_type == tag_type,
+        Tag.user_id == user_id,
     ).first()
     if not db_tag:
-        db_tag = Tag(name=tag_name, tag_type=tag_type)
+        db_tag = Tag(name=tag_name, tag_type=tag_type, user_id=user_id)
         db.add(db_tag)
         db.flush()
     return db_tag
+
+
+def get_existing_broad_topics(db: Session, user_id: Optional[str]) -> List[str]:
+    if not user_id:
+        return []
+
+    rows = (
+        db.query(Tag.name)
+        .filter(
+            Tag.user_id == user_id,
+            Tag.tag_type == 'broad',
+        )
+        .order_by(Tag.name.asc())
+        .all()
+    )
+    return [row.name for row in rows]
 
 
 def apply_link_analysis(
@@ -356,10 +484,10 @@ def apply_link_analysis(
     db.flush()
 
     for tag_name in specific_tags:
-        db_link.tags.append(get_or_create_tag(db, tag_name, 'specific'))
+        db_link.tags.append(get_or_create_tag(db, tag_name, 'specific', db_link.user_id))
 
     for tag_name in broad_tags:
-        db_link.tags.append(get_or_create_tag(db, tag_name, 'broad'))
+        db_link.tags.append(get_or_create_tag(db, tag_name, 'broad', db_link.user_id))
 
     return db_link
 
@@ -368,41 +496,96 @@ def analyze_and_apply_link(db: Session, db_link: Link) -> Link:
     """
     Scrape a link URL, generate summary/tags, and persist the result.
     """
-    title, summary, specific_tags, broad_tags = scrape_url(db_link.url)
+    existing_topics = get_existing_broad_topics(db, db_link.user_id)
+    title, summary, specific_tags, broad_tags = scrape_url(db_link.url, existing_topics)
     apply_link_analysis(db, db_link, title, summary, specific_tags, broad_tags)
     db.commit()
     db.refresh(db_link)
     return db_link
 
 
-def get_or_create_analyzed_link(db: Session, url: str) -> Link:
+def get_or_create_analyzed_link(db: Session, url: str, user_id: Optional[str] = None) -> Link:
     """
     Get an existing link, reprocess it if incomplete, or create and analyze a new one.
     """
-    existing_link = db.query(Link).filter(Link.url == url).first()
+    existing_link = db.query(Link).filter(
+        Link.url == url,
+        Link.user_id == user_id,
+    ).first()
     if existing_link:
         if not existing_link.summary or not existing_link.tags:
             return analyze_and_apply_link(db, existing_link)
         return existing_link
 
-    db_link = Link(url=url)
+    db_link = Link(url=url, user_id=user_id)
     db.add(db_link)
     db.flush()
     return analyze_and_apply_link(db, db_link)
 
 
-def get_project_or_404(db: Session, project_id: int) -> Project:
-    project = db.query(Project).filter(Project.id == project_id).first()
+def get_project_or_404(db: Session, project_id: int, user_id: str) -> Project:
+    project = db.query(Project).filter(
+        Project.id == project_id,
+        user_owned_filter(Project, user_id),
+    ).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
 
 
-def get_link_or_404(db: Session, link_id: int) -> Link:
-    link = db.query(Link).filter(Link.id == link_id).first()
+def get_link_or_404(db: Session, link_id: int, user_id: str) -> Link:
+    link = db.query(Link).filter(
+        Link.id == link_id,
+        user_owned_filter(Link, user_id),
+    ).first()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
     return link
+
+
+def get_task_or_404(db: Session, task_id: int, user_id: str) -> Task:
+    task = db.query(Task).filter(
+        Task.id == task_id,
+        user_owned_filter(Task, user_id),
+    ).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+
+def get_project_link_or_404(db: Session, project_id: int, link_id: int, user_id: str) -> ProjectLink:
+    project_link = (
+        db.query(ProjectLink)
+        .join(Project, Project.id == ProjectLink.project_id)
+        .join(Link, Link.id == ProjectLink.link_id)
+        .filter(
+            ProjectLink.project_id == project_id,
+            ProjectLink.link_id == link_id,
+            user_owned_filter(Project, user_id),
+            user_owned_filter(Link, user_id),
+        )
+        .first()
+    )
+    if not project_link:
+        raise HTTPException(status_code=404, detail="Project link not found")
+    return project_link
+
+
+def get_project_links_for_task(
+    db: Session,
+    project_id: int,
+    link_ids: Optional[List[int]],
+    user_id: str,
+) -> List[Link]:
+    if not link_ids:
+        return []
+
+    unique_ids = list(dict.fromkeys(link_ids))
+    links = []
+    for link_id in unique_ids:
+        get_project_link_or_404(db, project_id, link_id, user_id)
+        links.append(get_link_or_404(db, link_id, user_id))
+    return links
 
 
 def build_project_summary(project: Project) -> ProjectSummaryResponse:
@@ -423,30 +606,46 @@ def read_root():
     return {"message": "TabManager API is running"}
 
 
+@app.get("/auth/me")
+def read_current_user(current_user: CurrentUser = Depends(get_current_user)):
+    return {"id": current_user.id, "email": current_user.email}
+
+
 @app.post("/links", response_model=LinkResponse, status_code=201)
-def create_link(link: LinkCreate, db: Session = Depends(get_db)):
+def create_link(
+    link: LinkCreate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Create a new link. Scrapes the URL to get title, meta description, and tags.
     If an existing link is incomplete, reprocess it instead of failing.
     """
-    # Check if URL already exists (since url is unique)
-    existing_link = db.query(Link).filter(Link.url == link.url).first()
+    # Check if this user already saved the URL.
+    existing_link = db.query(Link).filter(
+        Link.url == link.url,
+        user_owned_filter(Link, current_user.id),
+    ).first()
     if existing_link:
         if not existing_link.summary or not existing_link.tags:
             return analyze_and_apply_link(db, existing_link)
-        raise HTTPException(status_code=400, detail="Link with this URL already exists")
+        raise HTTPException(status_code=400, detail="Link with this URL already exists in your library")
     
-    return get_or_create_analyzed_link(db, link.url)
+    return get_or_create_analyzed_link(db, link.url, current_user.id)
 
 
 @app.get("/links", response_model=List[LinkResponse])
-def get_links(db: Session = Depends(get_db)):
+def get_links(
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Get all saved links, with project memberships eagerly loaded.
     """
     links = (
         db.query(Link)
         .options(joinedload(Link.project_links).joinedload(ProjectLink.project))
+        .filter(user_owned_filter(Link, current_user.id))
         .all()
     )
     result = []
@@ -467,21 +666,54 @@ def get_links(db: Session = Depends(get_db)):
     return result
 
 
+@app.get("/tags", response_model=List[dict])
+def get_tags(
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Get all tags for manual topic/keyword editing.
+    """
+    tags = (
+        db.query(Tag)
+        .filter(user_owned_filter(Tag, current_user.id))
+        .order_by(Tag.tag_type.asc(), Tag.name.asc())
+        .all()
+    )
+    return [
+        {"id": tag.id, "name": tag.name, "tag_type": tag.tag_type}
+        for tag in tags
+    ]
+
+
 @app.get("/projects", response_model=List[ProjectSummaryResponse])
-def get_projects(db: Session = Depends(get_db)):
+def get_projects(
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Get all projects with lightweight counts.
     """
-    projects = db.query(Project).order_by(Project.updated_at.desc()).all()
+    projects = (
+        db.query(Project)
+        .filter(user_owned_filter(Project, current_user.id))
+        .order_by(Project.updated_at.desc())
+        .all()
+    )
     return [build_project_summary(project) for project in projects]
 
 
 @app.post("/projects", response_model=ProjectResponse, status_code=201)
-def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
+def create_project(
+    project: ProjectCreate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Create a project workspace.
     """
     db_project = Project(
+        user_id=current_user.id,
         name=project.name.strip(),
         description=project.description.strip() if project.description else None,
     )
@@ -495,19 +727,28 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/projects/{project_id}", response_model=ProjectResponse)
-def get_project(project_id: int, db: Session = Depends(get_db)):
+def get_project(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Get a project with its links and tasks.
     """
-    return get_project_or_404(db, project_id)
+    return get_project_or_404(db, project_id, current_user.id)
 
 
 @app.patch("/projects/{project_id}", response_model=ProjectResponse)
-def update_project(project_id: int, project: ProjectUpdate, db: Session = Depends(get_db)):
+def update_project(
+    project_id: int,
+    project: ProjectUpdate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Update project metadata.
     """
-    db_project = get_project_or_404(db, project_id)
+    db_project = get_project_or_404(db, project_id, current_user.id)
     updates = project.model_dump(exclude_unset=True)
 
     if "name" in updates and updates["name"] is not None:
@@ -526,28 +767,45 @@ def update_project(project_id: int, project: ProjectUpdate, db: Session = Depend
 
 
 @app.delete("/projects/{project_id}", status_code=204)
-def delete_project(project_id: int, db: Session = Depends(get_db)):
+def delete_project(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Delete a project. Saved links remain in the global library.
     """
-    db_project = get_project_or_404(db, project_id)
+    db_project = get_project_or_404(db, project_id, current_user.id)
     db.delete(db_project)
     db.commit()
     return None
 
 
 @app.post("/projects/{project_id}/links", response_model=ProjectLinkResponse, status_code=201)
-def add_link_to_project(project_id: int, link_data: LinkAddToProject, db: Session = Depends(get_db)):
+def add_link_to_project(
+    project_id: int,
+    link_data: LinkAddToProject,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Add an existing saved link to a project.
     """
-    get_project_or_404(db, project_id)
-    get_link_or_404(db, link_data.link_id)
+    get_project_or_404(db, project_id, current_user.id)
+    get_link_or_404(db, link_data.link_id, current_user.id)
 
-    existing = db.query(ProjectLink).filter(
-        ProjectLink.project_id == project_id,
-        ProjectLink.link_id == link_data.link_id,
-    ).first()
+    existing = (
+        db.query(ProjectLink)
+        .join(Project, Project.id == ProjectLink.project_id)
+        .join(Link, Link.id == ProjectLink.link_id)
+        .filter(
+            ProjectLink.project_id == project_id,
+            ProjectLink.link_id == link_data.link_id,
+            user_owned_filter(Project, current_user.id),
+            user_owned_filter(Link, current_user.id),
+        )
+        .first()
+    )
     if existing:
         existing.note = link_data.note
         existing.priority = link_data.priority
@@ -570,17 +828,30 @@ def add_link_to_project(project_id: int, link_data: LinkAddToProject, db: Sessio
 
 
 @app.post("/projects/{project_id}/links/from-url", response_model=ProjectLinkResponse, status_code=201)
-def add_url_to_project(project_id: int, link: LinkCreate, db: Session = Depends(get_db)):
+def add_url_to_project(
+    project_id: int,
+    link: LinkCreate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Save/analyze a URL and add it to a project.
     """
-    get_project_or_404(db, project_id)
-    db_link = get_or_create_analyzed_link(db, link.url)
+    get_project_or_404(db, project_id, current_user.id)
+    db_link = get_or_create_analyzed_link(db, link.url, current_user.id)
 
-    existing = db.query(ProjectLink).filter(
-        ProjectLink.project_id == project_id,
-        ProjectLink.link_id == db_link.id,
-    ).first()
+    existing = (
+        db.query(ProjectLink)
+        .join(Project, Project.id == ProjectLink.project_id)
+        .join(Link, Link.id == ProjectLink.link_id)
+        .filter(
+            ProjectLink.project_id == project_id,
+            ProjectLink.link_id == db_link.id,
+            user_owned_filter(Project, current_user.id),
+            user_owned_filter(Link, current_user.id),
+        )
+        .first()
+    )
     if existing:
         return existing
 
@@ -597,16 +868,12 @@ def update_project_link(
     link_id: int,
     link_data: ProjectLinkUpdate,
     db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Update project-specific metadata for a link.
     """
-    project_link = db.query(ProjectLink).filter(
-        ProjectLink.project_id == project_id,
-        ProjectLink.link_id == link_id,
-    ).first()
-    if not project_link:
-        raise HTTPException(status_code=404, detail="Project link not found")
+    project_link = get_project_link_or_404(db, project_id, link_id, current_user.id)
 
     updates = link_data.model_dump(exclude_unset=True)
     if "note" in updates:
@@ -622,16 +889,16 @@ def update_project_link(
 
 
 @app.delete("/projects/{project_id}/links/{link_id}", status_code=204)
-def remove_link_from_project(project_id: int, link_id: int, db: Session = Depends(get_db)):
+def remove_link_from_project(
+    project_id: int,
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Remove a link from a project without deleting it from the global library.
     """
-    project_link = db.query(ProjectLink).filter(
-        ProjectLink.project_id == project_id,
-        ProjectLink.link_id == link_id,
-    ).first()
-    if not project_link:
-        raise HTTPException(status_code=404, detail="Project link not found")
+    project_link = get_project_link_or_404(db, project_id, link_id, current_user.id)
 
     db.delete(project_link)
     db.commit()
@@ -639,22 +906,31 @@ def remove_link_from_project(project_id: int, link_id: int, db: Session = Depend
 
 
 @app.post("/projects/{project_id}/tasks", response_model=TaskResponse, status_code=201)
-def create_task(project_id: int, task: TaskCreate, db: Session = Depends(get_db)):
+def create_task(
+    project_id: int,
+    task: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Create a task in a project.
     """
-    get_project_or_404(db, project_id)
-    if task.linked_link_id is not None:
-        get_link_or_404(db, task.linked_link_id)
+    get_project_or_404(db, project_id, current_user.id)
+    linked_link_ids = list(task.linked_link_ids or [])
+    if task.linked_link_id is not None and task.linked_link_id not in linked_link_ids:
+        linked_link_ids.append(task.linked_link_id)
+    linked_links = get_project_links_for_task(db, project_id, linked_link_ids, current_user.id)
 
     db_task = Task(
+        user_id=current_user.id,
         project_id=project_id,
         title=task.title.strip(),
         description=task.description.strip() if task.description else None,
         status=task.status,
         due_date=task.due_date,
-        linked_link_id=task.linked_link_id,
+        linked_link_id=linked_link_ids[0] if linked_link_ids else None,
     )
+    db_task.linked_links = linked_links
     if not db_task.title:
         raise HTTPException(status_code=400, detail="Task title is required")
 
@@ -665,13 +941,16 @@ def create_task(project_id: int, task: TaskCreate, db: Session = Depends(get_db)
 
 
 @app.patch("/tasks/{task_id}", response_model=TaskResponse)
-def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
+def update_task(
+    task_id: int,
+    task: TaskUpdate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Update a project task.
     """
-    db_task = db.query(Task).filter(Task.id == task_id).first()
-    if not db_task:
-        raise HTTPException(status_code=404, detail="Task not found")
+    db_task = get_task_or_404(db, task_id, current_user.id)
 
     updates = task.model_dump(exclude_unset=True)
     if "title" in updates and updates["title"] is not None:
@@ -684,8 +963,17 @@ def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
         db_task.due_date = updates["due_date"]
     if "linked_link_id" in updates:
         if updates["linked_link_id"] is not None:
-            get_link_or_404(db, updates["linked_link_id"])
+            get_project_link_or_404(db, db_task.project_id, updates["linked_link_id"], current_user.id)
         db_task.linked_link_id = updates["linked_link_id"]
+    if "linked_link_ids" in updates:
+        linked_links = get_project_links_for_task(
+            db,
+            db_task.project_id,
+            updates["linked_link_ids"] or [],
+            current_user.id,
+        )
+        db_task.linked_links = linked_links
+        db_task.linked_link_id = linked_links[0].id if linked_links else None
 
     if not db_task.title:
         raise HTTPException(status_code=400, detail="Task title is required")
@@ -696,13 +984,15 @@ def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
 
 
 @app.delete("/tasks/{task_id}", status_code=204)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Delete a project task.
     """
-    db_task = db.query(Task).filter(Task.id == task_id).first()
-    if not db_task:
-        raise HTTPException(status_code=404, detail="Task not found")
+    db_task = get_task_or_404(db, task_id, current_user.id)
 
     db.delete(db_task)
     db.commit()
@@ -710,43 +1000,67 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/links/{link_id}/reprocess", response_model=LinkResponse)
-def reprocess_link(link_id: int, db: Session = Depends(get_db)):
+def reprocess_link(
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Re-scrape a saved link and regenerate its summary and tags.
     """
-    link = db.query(Link).filter(Link.id == link_id).first()
-    if not link:
-        raise HTTPException(status_code=404, detail="Link not found")
+    link = get_link_or_404(db, link_id, current_user.id)
 
     return analyze_and_apply_link(db, link)
 
 
 @app.patch("/links/{link_id}", response_model=LinkResponse)
-def update_link(link_id: int, update: LinkUpdate, db: Session = Depends(get_db)):
+def update_link(
+    link_id: int,
+    update: LinkUpdate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
-    Manually update a link's title and/or summary.
+    Manually update a link's title, summary, topics, and/or keywords.
     """
-    link = db.query(Link).filter(Link.id == link_id).first()
-    if not link:
-        raise HTTPException(status_code=404, detail="Link not found")
+    link = get_link_or_404(db, link_id, current_user.id)
     if update.title is not None:
         link.title = update.title
     if update.summary is not None:
         link.summary = update.summary
+    if update.topics is not None or update.keywords is not None:
+        topics = update.topics if update.topics is not None else [
+            tag.name for tag in link.tags if tag.tag_type == 'broad'
+        ]
+        keywords = update.keywords if update.keywords is not None else [
+            tag.name for tag in link.tags if tag.tag_type == 'specific'
+        ]
+        link.tags.clear()
+        db.flush()
+        for tag_name in topics:
+            normalized = normalize_tag(tag_name)
+            if normalized:
+                link.tags.append(get_or_create_tag(db, normalized, 'broad', link.user_id))
+        for tag_name in keywords:
+            normalized = normalize_tag(tag_name)
+            if normalized:
+                link.tags.append(get_or_create_tag(db, normalized, 'specific', link.user_id))
     db.commit()
     db.refresh(link)
     return link
 
 
 @app.delete("/links/{link_id}", status_code=204)
-def delete_link(link_id: int, db: Session = Depends(get_db)):
+def delete_link(
+    link_id: int,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
     """
     Delete a link by ID.
     Returns 204 No Content on success.
     """
-    link = db.query(Link).filter(Link.id == link_id).first()
-    if not link:
-        raise HTTPException(status_code=404, detail="Link not found")
+    link = get_link_or_404(db, link_id, current_user.id)
     
     db.delete(link)
     db.commit()
