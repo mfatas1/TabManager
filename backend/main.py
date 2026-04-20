@@ -169,13 +169,24 @@ except Exception as e:
 
 app = FastAPI(title="TabManager API")
 
+def get_allowed_origins() -> list[str]:
+    configured_origins = os.getenv("FRONTEND_ORIGINS", "")
+    production_origins = [
+        origin.strip().rstrip("/")
+        for origin in configured_origins.split(",")
+        if origin.strip()
+    ]
+    return [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        *production_origins,
+    ]
+
+
 # Add CORS middleware to allow frontend to make requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],  # Vite dev server default ports/hosts
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
