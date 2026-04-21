@@ -36,24 +36,24 @@
 
   /* ─── TabManager brand tokens ─────────────────────────────── */
   --background: #f7f8f5;
-  --foreground: #26312d;
+  --foreground: #1e1b2e;
   --surface: #ffffff;
-  --accent: #4f8f7a;
-  --accent-hover: #3d7464;
-  --text-primary: #26312d;
-  --text-secondary: #68746f;
-  --border: rgba(56, 74, 68, 0.14);
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --text-primary: #1e1b2e;
+  --text-secondary: #6b6880;
+  --border: rgba(74, 56, 120, 0.14);
   --card: #ffffff;
-  --card-foreground: #26312d;
-  --muted-foreground: #68746f;
+  --card-foreground: #1e1b2e;
+  --muted-foreground: #6b6880;
 
   --tm-background: #f7f8f5;
   --tm-surface: #ffffff;
-  --tm-accent: #4f8f7a;
-  --tm-accent-hover: #3d7464;
-  --tm-text-primary: #26312d;
-  --tm-text-secondary: #68746f;
-  --tm-border: rgba(56, 74, 68, 0.14);
+  --tm-accent: #7c3aed;
+  --tm-accent-hover: #6d28d9;
+  --tm-text-primary: #1e1b2e;
+  --tm-text-secondary: #6b6880;
+  --tm-border: rgba(74, 56, 120, 0.14);
 }
 
 .dark {
