@@ -33,7 +33,7 @@ export default function ConfirmDialog({
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-md border-[#cfd8d1] bg-white px-4 py-2 text-sm font-semibold text-[#315f56] hover:bg-[#f7f8f5]">
+          <AlertDialogCancel className="rounded-md border-[#d8b4fe] bg-white px-4 py-2 text-sm font-semibold text-[#5b21b6] hover:bg-[#f7f8f5]">
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
@@ -41,7 +41,7 @@ export default function ConfirmDialog({
             className={`rounded-md px-4 py-2 text-sm font-semibold text-white ${
               destructive
                 ? 'bg-[#b94a48] hover:bg-[#9d3c3a]'
-                : 'bg-[#315f56] hover:bg-[#244b44]'
+                : 'bg-[#5b21b6] hover:bg-[#244b44]'
             }`}
           >
             {confirmLabel}

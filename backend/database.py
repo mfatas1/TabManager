@@ -13,8 +13,13 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://username:password@localho
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Supabase (and most cloud databases) require SSL. Adding sslmode=require
+# if not already present ensures the connection works on Render.
+if "sslmode" not in DATABASE_URL:
+    separator = "&" if "?" in DATABASE_URL else "?"
+    DATABASE_URL = f"{DATABASE_URL}{separator}sslmode=require"
+
 # Create SQLAlchemy engine
-# This is the connection pool to your PostgreSQL database
 engine = create_engine(DATABASE_URL)
 
 # SessionLocal is a factory for creating database sessions

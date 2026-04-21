@@ -14,7 +14,7 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 pt-32 pb-24 text-center">
 
         <div className="inline-flex items-center gap-2.5 rounded-md border border-[#d8ded8] bg-white px-4 py-1.5 mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#4f8f7a] flex-shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed] flex-shrink-0" />
           <span className="font-mono text-[11px] tracking-[0.12em] text-[#68746f] uppercase">
             Personal research tool
           </span>
@@ -22,7 +22,7 @@ export default function LandingPage() {
 
         <h1 className="font-display max-w-2xl text-5xl md:text-7xl font-bold tracking-tight leading-[0.96] mb-7">
           Save what you read.{' '}
-          <span className="text-[#4f8f7a]">See how it connects.</span>
+          <span className="text-[#7c3aed]">See how it connects.</span>
         </h1>
 
         <p className="max-w-sm text-base text-[#68746f] mb-10 leading-relaxed">
@@ -33,7 +33,7 @@ export default function LandingPage() {
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             to={primaryPath}
-            className="inline-flex items-center gap-2 rounded-md bg-[#315f56] px-7 py-3.5 text-sm font-semibold text-white hover:bg-[#244b44] transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-[#5b21b6] px-7 py-3.5 text-sm font-semibold text-white hover:bg-[#244b44] transition-colors"
           >
             {loading ? 'Loading...' : primaryLabel}
             <ArrowRight className="size-4" />
@@ -41,7 +41,7 @@ export default function LandingPage() {
           {isAuthenticated && (
             <Link
               to="/graph"
-              className="inline-flex items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-7 py-3.5 text-sm font-semibold text-[#315f56] hover:border-[#9fb4aa] transition-colors"
+              className="inline-flex items-center gap-2 rounded-md border border-[#d8b4fe] bg-white px-7 py-3.5 text-sm font-semibold text-[#5b21b6] hover:border-[#9fb4aa] transition-colors"
             >
               View graph
               <Network className="size-4" />
@@ -51,13 +51,13 @@ export default function LandingPage() {
       </main>
 
       {/* How it works */}
-      <section className="border-t border-[#dfe5df] bg-white px-6 py-20">
+      <section className="border-t border-[#e9d5ff] bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl">
 
           <div className="flex items-center gap-5 mb-14">
-            <div className="h-px flex-1 bg-[#dfe5df]" />
+            <div className="h-px flex-1 bg-[#e9d5ff]" />
             <span className="font-mono text-[11px] tracking-[0.16em] text-[#7d8984] uppercase">How it works</span>
-            <div className="h-px flex-1 bg-[#dfe5df]" />
+            <div className="h-px flex-1 bg-[#e9d5ff]" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -81,33 +81,33 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="border-t border-[#dfe5df] bg-[#f7f8f5] px-6 py-20">
+      <section className="border-t border-[#e9d5ff] bg-[#f7f8f5] px-6 py-20">
         <div className="mx-auto max-w-4xl">
 
           <div className="flex items-center gap-5 mb-14">
-            <div className="h-px flex-1 bg-[#dfe5df]" />
+            <div className="h-px flex-1 bg-[#e9d5ff]" />
             <span className="font-mono text-[11px] tracking-[0.16em] text-[#7d8984] uppercase">What's included</span>
-            <div className="h-px flex-1 bg-[#dfe5df]" />
+            <div className="h-px flex-1 bg-[#e9d5ff]" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-[#dfe5df] bg-[#dfe5df] rounded-lg overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-[#e9d5ff] bg-[#e9d5ff] rounded-lg overflow-hidden">
             <FeatureCard
-              icon={<BookOpen className="size-4 text-[#4f8f7a]" />}
+              icon={<BookOpen className="size-4 text-[#7c3aed]" />}
               title="Library"
               description="Every link you save lives here. Search, filter by topic, sort by date or name, and edit the title or summary if the AI got it wrong."
             />
             <FeatureCard
-              icon={<Network className="size-4 text-[#4f8f7a]" />}
+              icon={<Network className="size-4 text-[#7c3aed]" />}
               title="Knowledge graph"
               description="A visual map of your reading. Topics become hubs, and links cluster around the subjects they cover. Filter to any topic to focus in."
             />
             <FeatureCard
-              icon={<FolderKanban className="size-4 text-[#4f8f7a]" />}
+              icon={<FolderKanban className="size-4 text-[#7c3aed]" />}
               title="Projects"
               description="When you're researching something specific, group relevant links into a project. Track reading status per link and attach tasks to keep things moving."
             />
             <FeatureCard
-              icon={<Tag className="size-4 text-[#4f8f7a]" />}
+              icon={<Tag className="size-4 text-[#7c3aed]" />}
               title="Tag editing"
               description="The AI assigns topic tags automatically. They're mostly right, but you can remove ones that don't fit, add your own, and reuse tags across links."
             />
@@ -115,7 +115,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-[#dfe5df] bg-white py-8 text-center">
+      <footer className="border-t border-[#e9d5ff] bg-white py-8 text-center">
         <span className="font-mono text-[11px] tracking-[0.16em] text-[#b0bab5] uppercase">
           Folio
         </span>
@@ -138,7 +138,7 @@ function Step({ number, title, description }) {
 function FeatureCard({ icon, title, description }) {
   return (
     <div className="p-7 bg-white">
-      <div className="mb-5 size-9 rounded-md bg-[#edf4ef] border border-[#d8ded8] flex items-center justify-center">
+      <div className="mb-5 size-9 rounded-md bg-[#f5f3ff] border border-[#d8ded8] flex items-center justify-center">
         {icon}
       </div>
       <h3 className="font-display text-sm font-semibold text-[#26312d] mb-2">{title}</h3>

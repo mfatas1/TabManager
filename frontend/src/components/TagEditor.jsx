@@ -55,7 +55,7 @@ export default function TagEditor({ label, tags, options, onChange }) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1.5 font-mono px-2.5 py-1 rounded-full text-[10px] bg-[#edf4ef] text-[#315f56] border border-[#c8d8cf]"
+              className="inline-flex items-center gap-1.5 font-mono px-2.5 py-1 rounded-full text-[10px] bg-[#f5f3ff] text-[#5b21b6] border border-[#ddd6fe]"
             >
               {tag}
               <button
@@ -92,13 +92,13 @@ export default function TagEditor({ label, tags, options, onChange }) {
           type="button"
           onClick={() => addTag(query)}
           disabled={!normalizeTag(query)}
-          className="px-3 py-2.5 text-sm font-semibold bg-[#315f56] text-white rounded-lg hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed"
+          className="px-3 py-2.5 text-sm font-semibold bg-[#5b21b6] text-white rounded-lg hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed"
         >
           <Plus className="size-4" />
         </button>
 
         {open && (filteredOptions.length > 0 || normalizeTag(query)) && (
-          <div className="absolute z-50 top-full mt-1.5 left-0 right-12 max-h-56 overflow-y-auto rounded-xl border border-[#dfe5df] bg-white shadow-lg shadow-black/8 py-1.5">
+          <div className="absolute z-50 top-full mt-1.5 left-0 right-12 max-h-56 overflow-y-auto rounded-xl border border-[#e9d5ff] bg-white shadow-lg shadow-black/8 py-1.5">
             {filteredOptions.map((option) => (
               <button
                 key={option}
@@ -113,7 +113,7 @@ export default function TagEditor({ label, tags, options, onChange }) {
               <button
                 type="button"
                 onClick={() => addTag(query)}
-                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#315f56] hover:bg-[#edf4ef] transition-colors border-t border-[#edf2ee]"
+                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#5b21b6] hover:bg-[#f5f3ff] transition-colors border-t border-[#edf2ee]"
               >
                 Create "{normalizeTag(query)}"
               </button>

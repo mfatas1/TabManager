@@ -31,7 +31,7 @@ export default function ProjectDropdown({ projects, value, onChange }) {
       </button>
 
       {open && (
-        <div className="absolute z-50 top-full mt-1.5 left-0 right-0 rounded-xl border border-[#dfe5df] bg-white shadow-lg shadow-black/8 py-1.5 overflow-hidden">
+        <div className="absolute z-50 top-full mt-1.5 left-0 right-0 rounded-xl border border-[#e9d5ff] bg-white shadow-lg shadow-black/8 py-1.5 overflow-hidden">
           <button
             type="button"
             onClick={() => {
@@ -51,10 +51,10 @@ export default function ProjectDropdown({ projects, value, onChange }) {
                 setOpen(false);
               }}
               className={`w-full text-left px-3 py-2 flex items-center gap-2.5 text-sm transition-colors hover:bg-[#f7f8f5] ${
-                String(value) === String(project.id) ? 'text-[#315f56] font-medium' : 'text-[#26312d]'
+                String(value) === String(project.id) ? 'text-[#5b21b6] font-medium' : 'text-[#26312d]'
               }`}
             >
-              <FolderOpen className="size-3.5 text-[#4f8f7a] flex-shrink-0" />
+              <FolderOpen className="size-3.5 text-[#7c3aed] flex-shrink-0" />
               {project.name}
             </button>
           ))}

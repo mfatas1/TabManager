@@ -18,10 +18,10 @@ export default function LinkNode({ data, selected }) {
         selected ? 'bg-[#5a9b86]' : 'bg-[#b7d3c6]'
       }`} />
 
-      <Handle type="source" position={Position.Right} className="!bg-[#4f8f7a] !border-[#9cb8aa] !w-2 !h-2" />
-      <Handle type="target" position={Position.Left} className="!bg-[#4f8f7a] !border-[#9cb8aa] !w-2 !h-2" />
-      <Handle type="source" position={Position.Bottom} className="!bg-[#4f8f7a] !border-[#9cb8aa] !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} className="!bg-[#4f8f7a] !border-[#9cb8aa] !w-2 !h-2" />
+      <Handle type="source" position={Position.Right} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
+      <Handle type="target" position={Position.Left} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
+      <Handle type="source" position={Position.Bottom} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
 
       <div className="pl-2">
         <div className="text-[11px] font-semibold text-[#26312d] leading-snug line-clamp-2" style={{ fontFamily: "'Syne', sans-serif" }}>

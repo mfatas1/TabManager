@@ -38,7 +38,7 @@ export function NavBar({ items, className }) {
               className={cn(
                 "relative cursor-pointer text-sm font-semibold px-5 py-2 rounded-md transition-colors",
                 "text-[#68746f] hover:text-[#26312d]",
-                isActive && "bg-[#e7efea] text-[#315f56]",
+                isActive && "bg-[#e7efea] text-[#5b21b6]",
               )}
             >
               <span className="hidden md:inline">{item.name}</span>
@@ -68,7 +68,7 @@ export function NavBar({ items, className }) {
             className={cn(
               "relative cursor-pointer rounded-md px-3 py-2 text-sm font-semibold transition-colors",
               location.pathname === '/login'
-                ? "bg-[#e7efea] text-[#315f56]"
+                ? "bg-[#e7efea] text-[#5b21b6]"
                 : "text-[#68746f] hover:text-[#26312d]",
             )}
           >

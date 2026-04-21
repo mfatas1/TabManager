@@ -75,7 +75,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setMode('login')}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                mode === 'login' ? 'bg-white text-[#315f56] shadow-sm' : 'text-[#68746f]'
+                mode === 'login' ? 'bg-white text-[#5b21b6] shadow-sm' : 'text-[#68746f]'
               }`}
             >
               Sign in
@@ -84,7 +84,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setMode('signup')}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                mode === 'signup' ? 'bg-white text-[#315f56] shadow-sm' : 'text-[#68746f]'
+                mode === 'signup' ? 'bg-white text-[#5b21b6] shadow-sm' : 'text-[#68746f]'
               }`}
             >
               Sign up
@@ -100,7 +100,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full rounded-md border border-[#cfd8d1] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4f8f7a] focus:ring-2 focus:ring-[#4f8f7a]/15"
+                className="w-full rounded-md border border-[#d8b4fe] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/15"
               />
             </label>
 
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 required
                 minLength={6}
-                className="w-full rounded-md border border-[#cfd8d1] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4f8f7a] focus:ring-2 focus:ring-[#4f8f7a]/15"
+                className="w-full rounded-md border border-[#d8b4fe] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/15"
               />
             </label>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
               </p>
             )}
             {message && (
-              <p className="rounded-md border border-[#d8ded8] bg-[#edf4ef] px-3 py-2 text-sm text-[#315f56]">
+              <p className="rounded-md border border-[#d8ded8] bg-[#f5f3ff] px-3 py-2 text-sm text-[#5b21b6]">
                 {message}
               </p>
             )}
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#315f56] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#244b44] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#5b21b6] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#244b44] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Working...' : mode === 'login' ? 'Sign in' : 'Create account'}
               {mode === 'login' ? <LogIn className="size-4" /> : <ArrowRight className="size-4" />}

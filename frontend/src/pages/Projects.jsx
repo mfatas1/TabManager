@@ -100,16 +100,16 @@ export default function Projects() {
 
   return (
     <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
-      <div className="relative border-b border-[#dfe5df]">
+      <div className="relative border-b border-[#e9d5ff]">
         <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-14">
           <div className="flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-2.5 rounded-md border border-[#c8d8cf] bg-white px-4 py-1.5 mb-7">
-              <FolderKanban className="size-3 text-[#4f8f7a]" />
-              <span className="font-mono text-[11px] tracking-[0.12em] text-[#315f56]/90 uppercase">Focused workspaces</span>
+            <div className="inline-flex items-center gap-2.5 rounded-md border border-[#ddd6fe] bg-white px-4 py-1.5 mb-7">
+              <FolderKanban className="size-3 text-[#7c3aed]" />
+              <span className="font-mono text-[11px] tracking-[0.12em] text-[#5b21b6]/90 uppercase">Focused workspaces</span>
             </div>
 
             <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-[0.92] mb-4">
-              Your <span className="text-[#4f8f7a]">Projects</span>
+              Your <span className="text-[#7c3aed]">Projects</span>
             </h1>
             <p className="max-w-sm text-sm text-[#68746f] leading-relaxed mb-10">
               Group links into focused workspaces, track tasks, and keep research moving.
@@ -134,7 +134,7 @@ export default function Projects() {
                 <button
                   type="submit"
                   disabled={creating || !name.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[#5b21b6] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {creating ? 'Creating...' : 'Create'}
@@ -155,7 +155,7 @@ export default function Projects() {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="rounded-lg border border-[#dfe5df] bg-white p-5">
+              <div key={index} className="rounded-lg border border-[#e9d5ff] bg-white p-5">
                 <div className="h-4 w-2/3 rounded bg-[#edf2ee] animate-pulse mb-3" />
                 <div className="h-3 w-full rounded bg-[#eef2ef] animate-pulse mb-2" />
                 <div className="h-3 w-1/2 rounded bg-[#eef2ef] animate-pulse" />
@@ -204,7 +204,7 @@ export default function Projects() {
               <span className="font-mono text-[#5f6c67]">"{searchQuery}"</span>.{' '}
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-[#4f8f7a] hover:text-[#315f56] underline underline-offset-2"
+                className="text-[#7c3aed] hover:text-[#5b21b6] underline underline-offset-2"
               >
                 Clear search
               </button>
@@ -228,7 +228,7 @@ export default function Projects() {
                   <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#7d8984]">
                     Archived
                   </h2>
-                  <div className="h-px flex-1 bg-[#dfe5df]" />
+                  <div className="h-px flex-1 bg-[#e9d5ff]" />
                   <span className="font-mono text-[10px] text-[#9aa39f]">
                     {archivedProjects.length}
                   </span>
@@ -267,7 +267,7 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
         <Link
           key={project.id}
           to={`/projects/${project.id}`}
-          className={`group rounded-lg border border-[#dfe5df] bg-white p-5 hover:border-[#b7cabe] hover:-translate-y-0.5 transition-all ${
+          className={`group rounded-lg border border-[#e9d5ff] bg-white p-5 hover:border-[#b7cabe] hover:-translate-y-0.5 transition-all ${
             archived ? 'opacity-70' : ''
           }`}
         >
@@ -279,7 +279,7 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
               <button
                 type="button"
                 onClick={(e) => onArchiveToggle(project, e)}
-                className="p-1.5 rounded-md text-[#9aa39f] hover:text-[#315f56] hover:bg-[#edf4ef] transition-colors"
+                className="p-1.5 rounded-md text-[#9aa39f] hover:text-[#5b21b6] hover:bg-[#f5f3ff] transition-colors"
                 title={project.status === 'archived' ? 'Unarchive project' : 'Archive project'}
               >
                 {project.status === 'archived' ? (

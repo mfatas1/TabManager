@@ -213,11 +213,11 @@ export default function ProjectDetail() {
 
   return (
     <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
-      <div className="relative border-b border-[#dfe5df]">
+      <div className="relative border-b border-[#e9d5ff]">
         <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-12">
           <Link
             to="/projects"
-            className="inline-flex items-center gap-2 font-mono text-[11px] text-[#68746f] hover:text-[#315f56] mb-8"
+            className="inline-flex items-center gap-2 font-mono text-[11px] text-[#68746f] hover:text-[#5b21b6] mb-8"
           >
             <ArrowLeft className="size-3.5" />
             Back to projects
@@ -225,9 +225,9 @@ export default function ProjectDetail() {
 
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2.5 rounded-md border border-[#c8d8cf] bg-white px-4 py-1.5 mb-6">
-                <FolderKanban className="size-3 text-[#4f8f7a]" />
-                <span className="font-mono text-[11px] tracking-[0.12em] text-[#315f56]/90 uppercase">Project workspace</span>
+              <div className="inline-flex items-center gap-2.5 rounded-md border border-[#ddd6fe] bg-white px-4 py-1.5 mb-6">
+                <FolderKanban className="size-3 text-[#7c3aed]" />
+                <span className="font-mono text-[11px] tracking-[0.12em] text-[#5b21b6]/90 uppercase">Project workspace</span>
               </div>
               <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-[0.92] mb-4">
                 {project.name}
@@ -253,7 +253,7 @@ export default function ProjectDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-6">
           <section>
-            <div className="rounded-lg border border-[#dfe5df] bg-white p-5 mb-4">
+            <div className="rounded-lg border border-[#e9d5ff] bg-white p-5 mb-4">
               <h2 className="font-display text-base font-semibold mb-4">Add a link</h2>
               <form onSubmit={handleAddUrl} className="flex flex-col sm:flex-row gap-2.5">
                 <input
@@ -266,7 +266,7 @@ export default function ProjectDetail() {
                 <button
                   type="submit"
                   disabled={savingUrl || !url.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[#5b21b6] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {savingUrl ? 'Saving...' : 'Add'}
@@ -276,7 +276,7 @@ export default function ProjectDetail() {
 
             <div className="space-y-3">
               {links.length === 0 && (
-                <div className="rounded-lg border border-[#dfe5df] bg-white p-8 text-center">
+                <div className="rounded-lg border border-[#e9d5ff] bg-white p-8 text-center">
                   <p className="font-mono text-xs text-[#7d8984] uppercase tracking-widest">No links in this project yet</p>
                 </div>
               )}
@@ -295,7 +295,7 @@ export default function ProjectDetail() {
                       if (node) linkRefs.current[link.id] = node;
                     }}
                     className={`rounded-lg border bg-white p-5 transition-colors ${
-                      isHighlighted ? 'border-[#4f8f7a] bg-[#fbfdfb]' : 'border-[#dfe5df]'
+                      isHighlighted ? 'border-[#7c3aed] bg-[#faf5ff]' : 'border-[#e9d5ff]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-3">
@@ -305,7 +305,7 @@ export default function ProjectDetail() {
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all"
+                          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#7c3aed]/80 hover:text-[#5b21b6] break-all"
                         >
                           <ExternalLink className="size-3" />
                           {link.url}
@@ -336,7 +336,7 @@ export default function ProjectDetail() {
                       <button
                         type="button"
                         onClick={() => openLinkedTaskComposer(link.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#d8ded8] px-2.5 py-1 font-mono text-[10px] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#315f56] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#d8ded8] px-2.5 py-1 font-mono text-[10px] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#5b21b6] transition-colors"
                       >
                         <Plus className="size-3" />
                         Task
@@ -350,7 +350,7 @@ export default function ProjectDetail() {
                       {topics.map((tag) => {
                         const tagName = getTagName(tag);
                         return (
-                          <span key={tag.id || tagName} className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[#edf4ef] text-[#315f56] border border-[#c8d8cf]">
+                          <span key={tag.id || tagName} className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[#f5f3ff] text-[#5b21b6] border border-[#ddd6fe]">
                             {tagName}
                           </span>
                         );
@@ -358,7 +358,7 @@ export default function ProjectDetail() {
                     </div>
 
                     {taskComposerLinkId === link.id && (
-                      <form onSubmit={handleCreateLinkedTask} className="mt-4 rounded-lg border border-[#dfe5df] bg-[#fbfcfa] p-3">
+                      <form onSubmit={handleCreateLinkedTask} className="mt-4 rounded-lg border border-[#e9d5ff] bg-[#fbfcfa] p-3">
                         <div className="mb-2 flex items-center justify-between gap-3">
                           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#7d8984]">
                             Task for this link
@@ -366,7 +366,7 @@ export default function ProjectDetail() {
                           <button
                             type="button"
                             onClick={() => setTaskComposerLinkId(null)}
-                            className="rounded-md p-1 text-[#9aa39f] hover:bg-[#edf4ef] hover:text-[#315f56]"
+                            className="rounded-md p-1 text-[#9aa39f] hover:bg-[#f5f3ff] hover:text-[#5b21b6]"
                             aria-label="Close task composer"
                           >
                             <X className="size-3.5" />
@@ -390,7 +390,7 @@ export default function ProjectDetail() {
                         <button
                           type="submit"
                           disabled={creatingLinkedTask || !linkedTaskTitle.trim()}
-                          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#315f56] px-3 py-2 text-xs font-semibold text-white hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
+                          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#5b21b6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                         >
                           <Plus className="size-3.5" />
                           {creatingLinkedTask ? 'Adding...' : 'Add task'}
@@ -404,7 +404,7 @@ export default function ProjectDetail() {
           </section>
 
           <aside>
-            <div className="rounded-lg border border-[#dfe5df] bg-white p-5 sticky top-24">
+            <div className="rounded-lg border border-[#e9d5ff] bg-white p-5 sticky top-24">
               <h2 className="font-display text-base font-semibold mb-4">Tasks</h2>
               <form onSubmit={handleCreateTask} className="space-y-2.5 mb-5">
                 <input
@@ -452,7 +452,7 @@ export default function ProjectDetail() {
                               key={linkId}
                               type="button"
                               onClick={() => toggleTaskLink(linkId)}
-                              className="inline-flex max-w-full items-center gap-1 rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-[#315f56] border border-[#c8d8cf]"
+                              className="inline-flex max-w-full items-center gap-1 rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-[#5b21b6] border border-[#ddd6fe]"
                               title="Remove linked source"
                             >
                               <span className="truncate max-w-[150px]">{linked.title || linked.url}</span>
@@ -464,7 +464,7 @@ export default function ProjectDetail() {
                     )}
 
                     {taskLinkPickerOpen && (
-                      <div className="max-h-52 overflow-y-auto border-t border-[#dfe5df] p-2">
+                      <div className="max-h-52 overflow-y-auto border-t border-[#e9d5ff] p-2">
                         {links.map((projectLink) => {
                           const linked = projectLink.link;
                           const selected = taskLinkIds.includes(linked.id);
@@ -475,11 +475,11 @@ export default function ProjectDetail() {
                               type="button"
                               onClick={() => toggleTaskLink(linked.id)}
                               className={`mb-1 flex w-full items-start gap-2 rounded-md px-2 py-2 text-left transition-colors last:mb-0 ${
-                                selected ? 'bg-[#edf4ef]' : 'hover:bg-white'
+                                selected ? 'bg-[#f5f3ff]' : 'hover:bg-white'
                               }`}
                             >
                               <span className={`mt-0.5 size-3.5 rounded-sm border flex-shrink-0 ${
-                                selected ? 'border-[#315f56] bg-[#315f56]' : 'border-[#cfd8d1] bg-white'
+                                selected ? 'border-[#5b21b6] bg-[#5b21b6]' : 'border-[#d8b4fe] bg-white'
                               }`}>
                                 {selected && <Check className="size-3 text-white" />}
                               </span>
@@ -501,7 +501,7 @@ export default function ProjectDetail() {
                 <button
                   type="submit"
                   disabled={creatingTask || !taskTitle.trim()}
-                  className="inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold bg-[#5b21b6] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {creatingTask ? 'Adding...' : 'Add task'}
@@ -518,7 +518,7 @@ export default function ProjectDetail() {
                   const taskLinks = getTaskLinks(task);
 
                   return (
-                  <div key={task.id} className="rounded-lg border border-[#dfe5df] bg-[#fbfcfa] p-3">
+                  <div key={task.id} className="rounded-lg border border-[#e9d5ff] bg-[#fbfcfa] p-3">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
                         <h3 className={`text-sm font-semibold ${task.status === 'done' ? 'line-through text-[#7d8984]' : 'text-[#26312d]'}`}>
@@ -534,7 +534,7 @@ export default function ProjectDetail() {
                                 key={linked.id}
                                 type="button"
                                 onClick={() => focusLinkedSource(linked.id)}
-                                className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8ded8] bg-white px-2.5 py-1 font-mono text-[10px] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#315f56] transition-colors"
+                                className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#d8ded8] bg-white px-2.5 py-1 font-mono text-[10px] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#5b21b6] transition-colors"
                                 title="Jump to linked source"
                               >
                                 <Link2 className="size-3 flex-shrink-0" />
@@ -559,7 +559,7 @@ export default function ProjectDetail() {
                         options={taskStatuses}
                         onChange={(status) => handleTaskStatus(task, status)}
                       />
-                      {task.status === 'done' && <Check className="size-3.5 text-[#4f8f7a]" />}
+                      {task.status === 'done' && <Check className="size-3.5 text-[#7c3aed]" />}
                     </div>
                   </div>
                   );
