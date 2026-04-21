@@ -308,10 +308,11 @@ Summary rules:
 - If the content is sparse, summarize only what can be confidently inferred.
 
 Topic rules for "broad":
-- Return exactly 1-2 topics.
+- Return exactly 2 topics.
 - Topics should be library sections, not detailed descriptors.
-- Reuse an existing topic whenever it reasonably fits.
-- Create a new topic only when none of the existing topics fit.
+- First, decide the 2 best topics purely based on the page content, ignoring existing topics entirely.
+- Then, for each of your 2 chosen topics, check if any existing topic is essentially the same concept or very close in meaning. If so, use the existing topic name instead. Otherwise keep your original choice.
+- Only substitute an existing topic if it is a near-identical match — do NOT force an existing topic just because it loosely relates.
 - Prefer stable, reusable fields like "machine-learning", "software-engineering", "physics", "startups", "finance", "climate", "neuroscience", "product-design", "mechanical-engineering", or "knowledge-management".
 - Do not use narrow concepts as topics. Examples that are too narrow for topics: "model-explainability", "startup-strategies", "algorithm-analysis", "geolocation", "sensor-technology", "momentum-gradient-descent".
 
@@ -374,9 +375,7 @@ Extracted page content:
 
             specific_tags = [tag for tag in specific_tags if tag][:5]
             broad_tags = [tag for tag in broad_tags if tag][:2]
-            if not broad_tags and topic_options:
-                broad_tags = [topic_options[0]]
-            elif not broad_tags:
+            if not broad_tags:
                 broad_tags = ["general-knowledge"]
             
             logger.info(f"✓ Generated summary: {generated_summary}")
