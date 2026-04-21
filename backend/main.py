@@ -308,13 +308,12 @@ Summary rules:
 - If the content is sparse, summarize only what can be confidently inferred.
 
 Topic rules for "broad":
-- Return exactly 2 topics.
+- Return 1 or 2 topics — only return 2 if the content genuinely spans two distinct fields.
 - Topics should be library sections, not detailed descriptors.
-- First, decide the 2 best topics purely based on the page content, ignoring existing topics entirely.
-- Then, for each of your 2 chosen topics, check if any existing topic is essentially the same concept or very close in meaning. If so, use the existing topic name instead. Otherwise keep your original choice.
-- Only substitute an existing topic if it is a near-identical match — do NOT force an existing topic just because it loosely relates.
-- Prefer stable, reusable fields like "machine-learning", "software-engineering", "physics", "startups", "finance", "climate", "neuroscience", "product-design", "mechanical-engineering", or "knowledge-management".
-- Do not use narrow concepts as topics. Examples that are too narrow for topics: "model-explainability", "startup-strategies", "algorithm-analysis", "geolocation", "sensor-technology", "momentum-gradient-descent".
+- Choose topics based ONLY on the page content. Completely ignore the existing topics list when deciding.
+- After choosing, check the existing topics list: only swap in an existing topic if it is an exact or near-exact match (e.g. you chose "machine-learning" and "machine-learning" already exists). Do NOT substitute just because an existing topic is loosely related.
+- Prefer stable, reusable fields like "machine-learning", "software-engineering", "physics", "startups", "finance", "climate", "neuroscience", "product-design", "mechanical-engineering", "artificial-intelligence", "mathematics", "biology".
+- Do not use narrow concepts as topics. Examples that are too narrow: "model-explainability", "startup-strategies", "algorithm-analysis", "transformer-models", "momentum-gradient-descent".
 
 Keyword rules for "specific":
 - Return 3-5 keywords.
