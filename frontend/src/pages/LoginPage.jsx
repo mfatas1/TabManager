@@ -55,27 +55,27 @@ export default function LoginPage() {
     <main className="min-h-screen bg-[#f7f8f5] px-6 py-28 text-[#26312d]">
       <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
         <section>
-          <Link to="/" className="mb-8 inline-flex items-center gap-2.5 rounded-md border border-[#d8ded8] bg-white px-4 py-1.5">
+          <Link to="/" className="mb-8 inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-border)] bg-white px-4 py-1.5">
             <BookOpen className="size-4" />
-            <span className="font-mono text-[11px] tracking-[0.12em] text-[#68746f] uppercase">
+            <span className="font-mono text-[11px] tracking-[0.12em] text-[var(--tm-text-secondary)] uppercase">
               Folio
             </span>
           </Link>
           <h1 className="font-display max-w-xl text-4xl font-bold leading-tight md:text-6xl">
             Keep your library close.
           </h1>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-[#68746f]">
+          <p className="mt-5 max-w-md text-base leading-relaxed text-[var(--tm-text-secondary)]">
             Sign in to save links, shape projects, and keep your graph tied to your own account.
           </p>
         </section>
 
-        <section className="rounded-lg border border-[#d8ded8] bg-white p-6 shadow-sm">
-          <div className="mb-6 flex rounded-md border border-[#d8ded8] bg-[#f7f8f5] p-1">
+        <section className="rounded-lg border border-[var(--tm-border)] bg-white p-6 shadow-sm">
+          <div className="mb-6 flex rounded-md border border-[var(--tm-border)] bg-[#f7f8f5] p-1">
             <button
               type="button"
               onClick={() => setMode('login')}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                mode === 'login' ? 'bg-white text-[#5b21b6] shadow-sm' : 'text-[#68746f]'
+                mode === 'login' ? 'bg-white text-[var(--tm-accent-hover)] shadow-sm' : 'text-[var(--tm-text-secondary)]'
               }`}
             >
               Sign in
@@ -84,7 +84,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setMode('signup')}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                mode === 'signup' ? 'bg-white text-[#5b21b6] shadow-sm' : 'text-[#68746f]'
+                mode === 'signup' ? 'bg-white text-[var(--tm-accent-hover)] shadow-sm' : 'text-[var(--tm-text-secondary)]'
               }`}
             >
               Sign up
@@ -100,7 +100,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full rounded-md border border-[#d8b4fe] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/15"
+                className="w-full rounded-md border border-[var(--tm-border-mid)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--tm-accent)] focus:ring-2 focus:ring-[var(--tm-accent)]/15"
               />
             </label>
 
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 required
                 minLength={6}
-                className="w-full rounded-md border border-[#d8b4fe] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/15"
+                className="w-full rounded-md border border-[var(--tm-border-mid)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--tm-accent)] focus:ring-2 focus:ring-[var(--tm-accent)]/15"
               />
             </label>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
               </p>
             )}
             {message && (
-              <p className="rounded-md border border-[#d8ded8] bg-[#f5f3ff] px-3 py-2 text-sm text-[#5b21b6]">
+              <p className="rounded-md border border-[var(--tm-border)] bg-[var(--tm-accent-bg)] px-3 py-2 text-sm text-[var(--tm-accent-hover)]">
                 {message}
               </p>
             )}
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#5b21b6] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#244b44] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--tm-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Working...' : mode === 'login' ? 'Sign in' : 'Create account'}
               {mode === 'login' ? <LogIn className="size-4" /> : <ArrowRight className="size-4" />}

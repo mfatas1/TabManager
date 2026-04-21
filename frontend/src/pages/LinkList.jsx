@@ -280,18 +280,18 @@ function LinkList() {
     <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
 
       {/* ── Hero / Input ──────────────────────────────────────── */}
-      <div className="relative border-b border-[#e9d5ff] overflow-hidden">
+      <div className="relative border-b border-[#e8dff2] overflow-hidden">
         <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-14">
           <div className="flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-2.5 rounded-md border border-[#ddd6fe] bg-white px-4 py-1.5 mb-7">
-              <BookOpen className="size-3 text-[#7c3aed]" />
-              <span className="font-mono text-[11px] tracking-[0.12em] text-[#5b21b6]/90 uppercase">Your saved knowledge</span>
+            <div className="inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-accent-bg-deep)] bg-white px-4 py-1.5 mb-7">
+              <BookOpen className="size-3 text-[var(--tm-accent)]" />
+              <span className="font-mono text-[11px] tracking-[0.12em] text-[var(--tm-accent-hover)]/90 uppercase">Your saved knowledge</span>
             </div>
 
             <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-[0.92] mb-4">
-              Your <span className="text-[#7c3aed]">Library</span>
+              Your <span className="text-[var(--tm-accent)]">Library</span>
             </h1>
-            <p className="max-w-sm text-sm text-[#68746f] leading-relaxed mb-10">
+            <p className="max-w-sm text-sm text-[var(--tm-text-secondary)] leading-relaxed mb-10">
               Save any URL and let AI automatically extract titles, summaries, and semantic tags.
             </p>
 
@@ -304,12 +304,12 @@ function LinkList() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
                   disabled={submitting}
-                  className="flex-1 px-4 py-3 font-mono text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] placeholder:text-[#9aa39f] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/30 disabled:opacity-50 transition-all"
+                  className="flex-1 px-4 py-3 font-mono text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={submitting || !url.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-[#5b21b6] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-all"
                 >
                   <Plus className="size-4" />
                   {submitting ? 'Saving…' : 'Save'}
@@ -342,15 +342,15 @@ function LinkList() {
         {/* Search + Sort bar */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <div className="relative flex-1 min-w-[180px] max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#9aa39f] pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[var(--tm-text-muted)] pointer-events-none" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search links…"
-              className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[#d8ded8] rounded-full bg-white text-[#26312d] placeholder:text-[#b0bab5] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
+              className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[var(--tm-border)] rounded-full bg-white text-[#26312d] placeholder:text-[var(--tm-text-faint)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9aa39f] hover:text-[#5f6c67]">
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tm-text-muted)] hover:text-[#6b5fa0]">
                 <X className="size-3" />
               </button>
             )}
@@ -367,8 +367,8 @@ function LinkList() {
                 onClick={() => setSortOrder(key)}
                 className={`font-mono text-[10px] px-2.5 py-1 rounded-full border transition-all ${
                   sortOrder === key
-                    ? 'bg-[#5b21b6] text-white border-[#5b21b6]'
-                    : 'text-[#68746f] border-[#d8ded8] hover:border-[#a8bfb2] hover:text-[#5b21b6]'
+                    ? 'bg-[var(--tm-accent-hover)] text-white border-[var(--tm-accent-hover)]'
+                    : 'text-[var(--tm-text-secondary)] border-[var(--tm-border)] hover:border-[var(--tm-accent-subtle)] hover:text-[var(--tm-accent-hover)]'
                 }`}
               >
                 {label}
@@ -385,7 +385,7 @@ function LinkList() {
               className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                 !selectedTag
                   ? 'bg-[#e7efea] border-[#b7c6bd] text-[#26312d]'
-                  : 'bg-transparent border-[#d8ded8] text-[#68746f] hover:border-[#c3cfc7] hover:text-[#5f6c67]'
+                  : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-faint)] hover:text-[#6b5fa0]'
               }`}
             >
               All <span className="opacity-50">{links.length}</span>
@@ -396,8 +396,8 @@ function LinkList() {
                 onClick={() => setSearchParams(selectedTag === tag ? {} : { tag })}
                 className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                   selectedTag === tag
-                    ? 'bg-[#5b21b6] border-[#5b21b6] text-white'
-                    : 'bg-transparent border-[#d8ded8] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#5b21b6]'
+                    ? 'bg-[var(--tm-accent-hover)] border-[var(--tm-accent-hover)] text-white'
+                    : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-subtle)] hover:text-[var(--tm-accent-hover)]'
                 }`}
               >
                 {tag} <span className="opacity-50">{count}</span>
@@ -406,7 +406,7 @@ function LinkList() {
             {hiddenCount > 0 && (
               <button
                 onClick={() => setShowAllTags(v => !v)}
-                className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[#d8ded8] text-[#7d8984] hover:text-[#5f6c67] hover:border-[#c3cfc7] transition-all"
+                className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[var(--tm-border)] text-[var(--tm-text-disabled)] hover:text-[#6b5fa0] hover:border-[var(--tm-accent-faint)] transition-all"
               >
                 {showAllTags ? 'show less' : `+${hiddenCount} more`}
               </button>
@@ -418,7 +418,7 @@ function LinkList() {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="rounded-lg border border-[#e9d5ff] bg-white p-5">
+              <div key={idx} className="rounded-lg border border-[#e8dff2] bg-white p-5">
                 <div className="h-4 w-3/4 rounded bg-[#edf2ee] animate-pulse mb-3" />
                 <div className="h-3 w-full rounded bg-[#eef2ef] animate-pulse mb-2" />
                 <div className="h-3 w-2/3 rounded bg-[#eef2ef] animate-pulse mb-4" />
@@ -439,20 +439,20 @@ function LinkList() {
 
         {!loading && !error && links.length === 0 && (
           <div className="flex flex-col items-center justify-center py-28 text-center">
-            <div className="size-14 mb-6 rounded-lg border border-[#d8ded8] bg-white flex items-center justify-center">
-              <Plus className="size-6 text-[#7d8984]" />
+            <div className="size-14 mb-6 rounded-lg border border-[var(--tm-border)] bg-white flex items-center justify-center">
+              <Plus className="size-6 text-[var(--tm-text-disabled)]" />
             </div>
-            <h2 className="font-display text-lg font-semibold text-[#5f6c67] mb-2">Empty library</h2>
-            <p className="font-mono text-xs text-[#9aa39f] uppercase tracking-widest">Paste a URL above to begin</p>
+            <h2 className="font-display text-lg font-semibold text-[#6b5fa0] mb-2">Empty library</h2>
+            <p className="font-mono text-xs text-[var(--tm-text-muted)] uppercase tracking-widest">Paste a URL above to begin</p>
           </div>
         )}
 
         {!loading && !error && selectedTag && filteredLinks.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm text-[#68746f]">
+            <p className="text-sm text-[var(--tm-text-secondary)]">
               No links tagged{' '}
-              <span className="font-mono text-[#5f6c67]">"{selectedTag}"</span>.{' '}
-              <button onClick={clearFilter} className="text-[#7c3aed] hover:text-[#5b21b6] underline underline-offset-2">
+              <span className="font-mono text-[#6b5fa0]">"{selectedTag}"</span>.{' '}
+              <button onClick={clearFilter} className="text-[var(--tm-accent)] hover:text-[var(--tm-accent-hover)] underline underline-offset-2">
                 Clear filter
               </button>
             </p>
@@ -480,10 +480,10 @@ function LinkList() {
                   }}
                   className={`group relative rounded-lg border bg-white flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 ${
                     selectedLink?.id === link.id
-                      ? 'border-[#7c3aed]'
+                      ? 'border-[var(--tm-accent)]'
                       : isHighlighted
                       ? 'border-[#7aa390]'
-                      : 'border-[#e9d5ff] hover:border-[#b7cabe]'
+                      : 'border-[#e8dff2] hover:border-[#b7cabe]'
                   } cursor-pointer`}
                 >
                   {/* Left accent bar */}
@@ -500,14 +500,14 @@ function LinkList() {
                       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 flex-shrink-0 transition-all">
                         <button
                           onClick={(e) => openEditModal(link, e)}
-                          className="p-1.5 rounded-lg hover:bg-[#f5f3ff] text-[#9aa39f] hover:text-[#7c3aed] transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-[var(--tm-accent-bg)] text-[var(--tm-text-muted)] hover:text-[var(--tm-accent)] transition-colors"
                           title="Edit link"
                         >
                           <Pencil className="size-3.5" />
                         </button>
                         <button
                           onClick={(e) => requestDelete(link, e)}
-                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-[#9aa39f] hover:text-red-400 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--tm-text-muted)] hover:text-red-400 transition-colors"
                           title="Delete link"
                         >
                           <Trash2 className="size-3.5" />
@@ -521,7 +521,7 @@ function LinkList() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#7c3aed]/60 hover:text-[#5b21b6] truncate transition-colors"
+                      className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[var(--tm-accent)]/60 hover:text-[var(--tm-accent-hover)] truncate transition-colors"
                     >
                       <ExternalLink className="size-2.5 flex-shrink-0" />
                       <span className="truncate">{link.url}</span>
@@ -529,7 +529,7 @@ function LinkList() {
 
                     {/* Summary */}
                     {link.summary && (
-                      <p className="text-xs text-[#7d8984] leading-relaxed line-clamp-2">
+                      <p className="text-xs text-[var(--tm-text-disabled)] leading-relaxed line-clamp-2">
                         {link.summary}
                       </p>
                     )}
@@ -547,8 +547,8 @@ function LinkList() {
                                 onClick={(e) => handleTagClick(tagName, e)}
                                 className={`font-mono px-2.5 py-0.5 rounded-full text-[10px] tracking-wide transition-all ${
                                   isActive
-                                    ? 'bg-[#5b21b6] text-white'
-                                    : 'bg-[#f5f3ff] text-[#7c3aed]/80 hover:bg-[#ede9fe] hover:text-[#5b21b6]'
+                                    ? 'bg-[var(--tm-accent-hover)] text-white'
+                                    : 'bg-[var(--tm-accent-bg)] text-[var(--tm-accent)]/80 hover:bg-[#f0ebf8] hover:text-[var(--tm-accent-hover)]'
                                 }`}
                               >
                                 {tagName}
@@ -574,25 +574,25 @@ function LinkList() {
       {/* ── Edit Modal ──────────────────────────────────────────── */}
       {editingLink && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm" onClick={() => setEditingLink(null)}>
-          <div className="w-full max-w-lg bg-white rounded-xl border border-[#e9d5ff] shadow-xl p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-white rounded-xl border border-[#e8dff2] shadow-xl p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="font-display text-lg font-semibold text-[#26312d] mb-1">Edit link</h2>
-            <p className="font-mono text-[11px] text-[#9aa39f] mb-5 truncate">{editingLink.url}</p>
+            <p className="font-mono text-[11px] text-[var(--tm-text-muted)] mb-5 truncate">{editingLink.url}</p>
             <div className="space-y-4">
               <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Title</label>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Title</label>
                 <input
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
+                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
                 />
               </div>
               <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Summary</label>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Summary</label>
                 <textarea
                   value={editSummary}
                   onChange={(e) => setEditSummary(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 resize-none transition-all"
+                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 resize-none transition-all"
                 />
               </div>
               <TagEditor
@@ -612,13 +612,13 @@ function LinkList() {
               <button
                 onClick={handleSaveEdit}
                 disabled={editSaving}
-                className="flex-1 py-2.5 text-sm font-semibold bg-[#5b21b6] text-white rounded-lg hover:bg-[#244b44] disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-hover)] disabled:opacity-50 transition-colors"
               >
                 {editSaving ? 'Saving…' : 'Save changes'}
               </button>
               <button
                 onClick={() => setEditingLink(null)}
-                className="px-4 py-2.5 text-sm text-[#68746f] border border-[#d8ded8] rounded-lg hover:bg-[#f7f8f5] transition-colors"
+                className="px-4 py-2.5 text-sm text-[var(--tm-text-secondary)] border border-[var(--tm-border)] rounded-lg hover:bg-[#f7f8f5] transition-colors"
               >
                 Cancel
               </button>
@@ -629,20 +629,20 @@ function LinkList() {
 
       {/* ── Side Panel ──────────────────────────────────────────── */}
       {selectedLink && (
-        <div className="fixed top-0 right-0 w-[400px] max-w-[calc(100vw-24px)] h-full bg-[#f7f8f5] border-l border-[#e9d5ff] z-50 flex flex-col shadow-sm">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[#e9d5ff]">
-            <span className="font-mono text-[10px] tracking-[0.2em] text-[#9aa39f] uppercase">Link Details</span>
+        <div className="fixed top-0 right-0 w-[400px] max-w-[calc(100vw-24px)] h-full bg-[#f7f8f5] border-l border-[#e8dff2] z-50 flex flex-col shadow-sm">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[#e8dff2]">
+            <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--tm-text-muted)] uppercase">Link Details</span>
             <div className="flex items-center gap-1">
               <button
                 onClick={(e) => openEditModal(selectedLink, e)}
-                className="p-2 rounded-lg hover:bg-[#f5f3ff] text-[#7d8984] hover:text-[#5b21b6] transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--tm-accent-bg)] text-[var(--tm-text-disabled)] hover:text-[var(--tm-accent-hover)] transition-colors"
                 title="Edit title, summary, topics, and keywords"
               >
                 <Pencil className="size-4" />
               </button>
               <button
                 onClick={closePanel}
-                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[#7d8984] hover:text-[#26312d] transition-colors"
+                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[var(--tm-text-disabled)] hover:text-[#26312d] transition-colors"
                 title="Close panel"
               >
                 <X className="size-4" />
@@ -651,7 +651,7 @@ function LinkList() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-6">
-            <div className="border-l-2 border-[#c4b5fd] pl-4 mb-8">
+            <div className="border-l-2 border-[var(--tm-border-mid)] pl-4 mb-8">
               <h3 className="font-display text-base font-semibold text-[#26312d] leading-snug">
                 {selectedLink.title || 'Untitled'}
               </h3>
@@ -659,12 +659,12 @@ function LinkList() {
 
             <div className="space-y-6">
               <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">URL</label>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">URL</label>
                 <a
                   href={selectedLink.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-start gap-2 font-mono text-[11px] text-[#7c3aed]/80 hover:text-[#5b21b6] break-all transition-colors leading-relaxed"
+                  className="inline-flex items-start gap-2 font-mono text-[11px] text-[var(--tm-accent)]/80 hover:text-[var(--tm-accent-hover)] break-all transition-colors leading-relaxed"
                 >
                   <ExternalLink className="size-3.5 mt-0.5 flex-shrink-0" />
                   {selectedLink.url}
@@ -673,14 +673,14 @@ function LinkList() {
 
               {selectedLink.summary && (
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Summary</label>
-                  <p className="text-sm text-[#68746f] leading-relaxed">{selectedLink.summary}</p>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Summary</label>
+                  <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed">{selectedLink.summary}</p>
                 </div>
               )}
 
               {getBroadTags(selectedLink.tags).length > 0 && (
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Topics</label>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Topics</label>
                   <div className="flex flex-wrap gap-1.5">
                     {getBroadTags(selectedLink.tags).map((tag) => {
                       const tagName = getTagName(tag);
@@ -688,7 +688,7 @@ function LinkList() {
                         <button
                           key={tag.id || tagName}
                           onClick={(e) => handleTagClick(tagName, e)}
-                          className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[#f5f3ff] text-[#5b21b6] border border-[#ddd6fe] hover:bg-[#ede9fe] transition-colors"
+                          className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)] hover:bg-[#f0ebf8] transition-colors"
                         >
                           {tagName}
                         </button>
@@ -700,14 +700,14 @@ function LinkList() {
 
               {getSpecificTags(selectedLink.tags).length > 0 && (
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Keywords</label>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Keywords</label>
                   <div className="flex flex-wrap gap-1.5">
                     {getSpecificTags(selectedLink.tags).map((tag) => {
                       const tagName = getTagName(tag);
                       return (
                         <span
                           key={tag.id || tagName}
-                          className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-white text-[#68746f] border border-[#d8ded8]"
+                          className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-white text-[var(--tm-text-secondary)] border border-[var(--tm-border)]"
                         >
                           {tagName}
                         </span>
@@ -718,8 +718,8 @@ function LinkList() {
               )}
 
               <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Saved</label>
-                <div className="flex items-center gap-2 font-mono text-xs text-[#7d8984]">
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Saved</label>
+                <div className="flex items-center gap-2 font-mono text-xs text-[var(--tm-text-disabled)]">
                   <Calendar className="size-3.5" />
                   {new Date(selectedLink.date_saved).toLocaleString()}
                 </div>
@@ -727,14 +727,14 @@ function LinkList() {
 
               {selectedLink.projects?.length > 0 && (
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">In projects</label>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">In projects</label>
                   <div className="flex flex-wrap gap-1.5">
                     {selectedLink.projects.map(p => (
                       <a
                         key={p.id}
                         href={`/projects/${p.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full bg-[#f5f3ff] text-[#5b21b6] border border-[#ddd6fe] hover:bg-[#ede9fe] transition-colors"
+                        className="inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)] hover:bg-[#f0ebf8] transition-colors"
                       >
                         <FolderOpen className="size-2.5" />
                         {p.name}
@@ -746,7 +746,7 @@ function LinkList() {
 
               {projects.length > 0 && (
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Add to project</label>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Add to project</label>
                   <div className="flex gap-2">
                     <ProjectDropdown
                       projects={projects}
@@ -757,25 +757,25 @@ function LinkList() {
                       type="button"
                       onClick={handleAddToProject}
                       disabled={!selectedProjectId}
-                      className="px-4 py-2.5 text-sm font-semibold bg-[#5b21b6] text-white rounded-lg hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
+                      className="px-4 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                     >
                       Add
                     </button>
                   </div>
                   {projectMessage && (
-                    <p className="mt-2 font-mono text-[11px] text-[#68746f]">{projectMessage}</p>
+                    <p className="mt-2 font-mono text-[11px] text-[var(--tm-text-secondary)]">{projectMessage}</p>
                   )}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="px-6 py-5 border-t border-[#e9d5ff]">
+          <div className="px-6 py-5 border-t border-[#e8dff2]">
             <a
               href={selectedLink.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#5b21b6] hover:bg-[#244b44] text-white text-sm font-semibold rounded-md transition-colors"
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-hover)] text-white text-sm font-semibold rounded-md transition-colors"
             >
               <ExternalLink className="size-4" />
               Open Link

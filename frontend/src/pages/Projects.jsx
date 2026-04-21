@@ -100,18 +100,18 @@ export default function Projects() {
 
   return (
     <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
-      <div className="relative border-b border-[#e9d5ff]">
+      <div className="relative border-b border-[#e8dff2]">
         <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-14">
           <div className="flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-2.5 rounded-md border border-[#ddd6fe] bg-white px-4 py-1.5 mb-7">
-              <FolderKanban className="size-3 text-[#7c3aed]" />
-              <span className="font-mono text-[11px] tracking-[0.12em] text-[#5b21b6]/90 uppercase">Focused workspaces</span>
+            <div className="inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-accent-bg-deep)] bg-white px-4 py-1.5 mb-7">
+              <FolderKanban className="size-3 text-[var(--tm-accent)]" />
+              <span className="font-mono text-[11px] tracking-[0.12em] text-[var(--tm-accent-hover)]/90 uppercase">Focused workspaces</span>
             </div>
 
             <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-[0.92] mb-4">
-              Your <span className="text-[#7c3aed]">Projects</span>
+              Your <span className="text-[var(--tm-accent)]">Projects</span>
             </h1>
-            <p className="max-w-sm text-sm text-[#68746f] leading-relaxed mb-10">
+            <p className="max-w-sm text-sm text-[var(--tm-text-secondary)] leading-relaxed mb-10">
               Group links into focused workspaces, track tasks, and keep research moving.
             </p>
 
@@ -122,19 +122,19 @@ export default function Projects() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Project name"
                   disabled={creating}
-                  className="px-4 py-3 text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] placeholder:text-[#9aa39f] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/30 disabled:opacity-50"
+                  className="px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                 />
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Short description"
                   disabled={creating}
-                  className="px-4 py-3 text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] placeholder:text-[#9aa39f] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/30 disabled:opacity-50"
+                  className="px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={creating || !name.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[#5b21b6] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {creating ? 'Creating...' : 'Create'}
@@ -155,7 +155,7 @@ export default function Projects() {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="rounded-lg border border-[#e9d5ff] bg-white p-5">
+              <div key={index} className="rounded-lg border border-[#e8dff2] bg-white p-5">
                 <div className="h-4 w-2/3 rounded bg-[#edf2ee] animate-pulse mb-3" />
                 <div className="h-3 w-full rounded bg-[#eef2ef] animate-pulse mb-2" />
                 <div className="h-3 w-1/2 rounded bg-[#eef2ef] animate-pulse" />
@@ -167,17 +167,17 @@ export default function Projects() {
         {!loading && projects.length > 0 && (
           <div className="mb-8 flex items-center gap-3">
             <div className="relative flex-1 min-w-[180px] max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#9aa39f] pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[var(--tm-text-muted)] pointer-events-none" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search projects..."
-                className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[#d8ded8] rounded-full bg-white text-[#26312d] placeholder:text-[#b0bab5] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
+                className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[var(--tm-border)] rounded-full bg-white text-[#26312d] placeholder:text-[var(--tm-text-faint)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9aa39f] hover:text-[#5f6c67]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tm-text-muted)] hover:text-[#6b5fa0]"
                   aria-label="Clear project search"
                 >
                   <X className="size-3" />
@@ -189,22 +189,22 @@ export default function Projects() {
 
         {!loading && projects.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="size-14 mb-6 rounded-lg border border-[#d8ded8] bg-white flex items-center justify-center">
-              <FolderKanban className="size-6 text-[#7d8984]" />
+            <div className="size-14 mb-6 rounded-lg border border-[var(--tm-border)] bg-white flex items-center justify-center">
+              <FolderKanban className="size-6 text-[var(--tm-text-disabled)]" />
             </div>
-            <h2 className="font-display text-lg font-semibold text-[#5f6c67] mb-2">No projects yet</h2>
-            <p className="font-mono text-xs text-[#9aa39f] uppercase tracking-widest">Create one above to start grouping links</p>
+            <h2 className="font-display text-lg font-semibold text-[#6b5fa0] mb-2">No projects yet</h2>
+            <p className="font-mono text-xs text-[var(--tm-text-muted)] uppercase tracking-widest">Create one above to start grouping links</p>
           </div>
         )}
 
         {!loading && projects.length > 0 && filteredProjects.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm text-[#68746f]">
+            <p className="text-sm text-[var(--tm-text-secondary)]">
               No projects matching{' '}
-              <span className="font-mono text-[#5f6c67]">"{searchQuery}"</span>.{' '}
+              <span className="font-mono text-[#6b5fa0]">"{searchQuery}"</span>.{' '}
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-[#7c3aed] hover:text-[#5b21b6] underline underline-offset-2"
+                className="text-[var(--tm-accent)] hover:text-[var(--tm-accent-hover)] underline underline-offset-2"
               >
                 Clear search
               </button>
@@ -225,11 +225,11 @@ export default function Projects() {
             {archivedProjects.length > 0 && (
               <section>
                 <div className="mb-4 flex items-center gap-3">
-                  <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#7d8984]">
+                  <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--tm-text-disabled)]">
                     Archived
                   </h2>
-                  <div className="h-px flex-1 bg-[#e9d5ff]" />
-                  <span className="font-mono text-[10px] text-[#9aa39f]">
+                  <div className="h-px flex-1 bg-[#e8dff2]" />
+                  <span className="font-mono text-[10px] text-[var(--tm-text-muted)]">
                     {archivedProjects.length}
                   </span>
                 </div>
@@ -267,7 +267,7 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
         <Link
           key={project.id}
           to={`/projects/${project.id}`}
-          className={`group rounded-lg border border-[#e9d5ff] bg-white p-5 hover:border-[#b7cabe] hover:-translate-y-0.5 transition-all ${
+          className={`group rounded-lg border border-[#e8dff2] bg-white p-5 hover:border-[#b7cabe] hover:-translate-y-0.5 transition-all ${
             archived ? 'opacity-70' : ''
           }`}
         >
@@ -279,7 +279,7 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
               <button
                 type="button"
                 onClick={(e) => onArchiveToggle(project, e)}
-                className="p-1.5 rounded-md text-[#9aa39f] hover:text-[#5b21b6] hover:bg-[#f5f3ff] transition-colors"
+                className="p-1.5 rounded-md text-[var(--tm-text-muted)] hover:text-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-bg)] transition-colors"
                 title={project.status === 'archived' ? 'Unarchive project' : 'Archive project'}
               >
                 {project.status === 'archived' ? (
@@ -291,7 +291,7 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
               <button
                 type="button"
                 onClick={(e) => onDelete(project, e)}
-                className="p-1.5 rounded-md text-[#9aa39f] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                className="p-1.5 rounded-md text-[var(--tm-text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 title="Delete project"
               >
                 <Trash2 className="size-3.5" />
@@ -299,11 +299,11 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
             </div>
           </div>
           {project.description && (
-            <p className="text-sm text-[#68746f] leading-relaxed line-clamp-2 mb-4">
+            <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed line-clamp-2 mb-4">
               {project.description}
             </p>
           )}
-          <div className="flex gap-2 font-mono text-[11px] text-[#7d8984]">
+          <div className="flex gap-2 font-mono text-[11px] text-[var(--tm-text-disabled)]">
             <span>{project.link_count} links</span>
             <span>·</span>
             <span>{project.task_count} tasks</span>

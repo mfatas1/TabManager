@@ -34,26 +34,52 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* ─── TabManager brand tokens ─────────────────────────────── */
-  --background: #f7f8f5;
-  --foreground: #1e1b2e;
-  --surface: #ffffff;
-  --accent: #7c3aed;
-  --accent-hover: #6d28d9;
-  --text-primary: #1e1b2e;
-  --text-secondary: #6b6880;
-  --border: rgba(74, 56, 120, 0.14);
-  --card: #ffffff;
-  --card-foreground: #1e1b2e;
-  --muted-foreground: #6b6880;
+  /* ─── TabManager brand palette ────────────────────────────── */
+  /* Accent shades */
+  --tm-accent:          #8b6bbf;   /* main lilac */
+  --tm-accent-hover:    #7a59ae;   /* darker on hover */
+  --tm-accent-dark:     #7a59ae;   /* alias */
+  --tm-accent-muted:    #a990d4;   /* muted icons / borders */
+  --tm-accent-subtle:   #b09fd4;   /* very subtle accents */
+  --tm-accent-faint:    #cec4e4;   /* faint hover borders */
 
-  --tm-background: #f7f8f5;
-  --tm-surface: #ffffff;
-  --tm-accent: #7c3aed;
-  --tm-accent-hover: #6d28d9;
-  --tm-text-primary: #1e1b2e;
-  --tm-text-secondary: #6b6880;
-  --tm-border: rgba(74, 56, 120, 0.14);
+  /* Accent backgrounds */
+  --tm-accent-bg:       #f5f0fb;   /* light tinted bg (tags, badges) */
+  --tm-accent-bg-mid:   #ede9fe;   /* slightly deeper tinted bg */
+  --tm-accent-bg-deep:  #e4d8f0;   /* deeper tinted bg */
+
+  /* Borders */
+  --tm-border:          #e2daf0;   /* default border */
+  --tm-border-mid:      #d4c7e8;   /* slightly stronger border */
+
+  /* Surfaces */
+  --tm-background:      #f7f8f5;
+  --tm-surface:         #ffffff;
+  --tm-surface-tinted:  #f9f6fd;   /* very faintly tinted white */
+
+  /* Text */
+  --tm-text-primary:    #1e1b2e;
+  --tm-text-secondary:  #6b6080;
+  --tm-text-muted:      #9990b0;
+  --tm-text-faint:      #b0a8c8;
+  --tm-text-disabled:   #8a7fa0;
+
+  /* Status dots (non-accent) */
+  --tm-status-neutral:  #cdc0e4;
+
+  /* Aliases used by shadcn tokens */
+  --background:         var(--tm-background);
+  --foreground:         var(--tm-text-primary);
+  --surface:            var(--tm-surface);
+  --accent:             var(--tm-accent);
+  --accent-hover:       var(--tm-accent-hover);
+  --text-primary:       var(--tm-text-primary);
+  --text-secondary:     var(--tm-text-secondary);
+  --border:             var(--tm-border);
+  --card:               var(--tm-surface);
+  --card-foreground:    var(--tm-text-primary);
+  --muted-foreground:   var(--tm-text-secondary);
+  --ring:               var(--tm-accent-muted);
 }
 
 .dark {

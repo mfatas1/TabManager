@@ -21,19 +21,19 @@ export default function ConfirmDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md rounded-lg border-[#d8ded8] bg-white p-6 text-[#26312d] shadow-xl">
+      <AlertDialogContent className="max-w-md rounded-lg border-[var(--tm-border)] bg-white p-6 text-[#26312d] shadow-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="font-display text-lg font-semibold text-[#26312d]">
             {title}
           </AlertDialogTitle>
           {description && (
-            <AlertDialogDescription className="text-sm leading-relaxed text-[#68746f]">
+            <AlertDialogDescription className="text-sm leading-relaxed text-[var(--tm-text-secondary)]">
               {description}
             </AlertDialogDescription>
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-md border-[#d8b4fe] bg-white px-4 py-2 text-sm font-semibold text-[#5b21b6] hover:bg-[#f7f8f5]">
+          <AlertDialogCancel className="rounded-md border-[var(--tm-border-mid)] bg-white px-4 py-2 text-sm font-semibold text-[var(--tm-accent-hover)] hover:bg-[#f7f8f5]">
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
@@ -41,7 +41,7 @@ export default function ConfirmDialog({
             className={`rounded-md px-4 py-2 text-sm font-semibold text-white ${
               destructive
                 ? 'bg-[#b94a48] hover:bg-[#9d3c3a]'
-                : 'bg-[#5b21b6] hover:bg-[#244b44]'
+                : 'bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-hover)]'
             }`}
           >
             {confirmLabel}

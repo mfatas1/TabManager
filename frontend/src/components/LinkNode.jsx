@@ -9,7 +9,7 @@ export default function LinkNode({ data, selected }) {
         font-sans transition-all cursor-pointer
         ${selected
           ? 'border-[#6e9a88]'
-          : 'border-[#d8ded8] hover:border-[#a8bfb2]'
+          : 'border-[var(--tm-border)] hover:border-[var(--tm-accent-subtle)]'
         }
       `}
     >
@@ -18,10 +18,10 @@ export default function LinkNode({ data, selected }) {
         selected ? 'bg-[#5a9b86]' : 'bg-[#b7d3c6]'
       }`} />
 
-      <Handle type="source" position={Position.Right} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
-      <Handle type="target" position={Position.Left} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
-      <Handle type="source" position={Position.Bottom} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} className="!bg-[#7c3aed] !border-[#c4b5fd] !w-2 !h-2" />
+      <Handle type="source" position={Position.Right} className="!bg-[var(--tm-accent)] !border-[var(--tm-border-mid)] !w-2 !h-2" />
+      <Handle type="target" position={Position.Left} className="!bg-[var(--tm-accent)] !border-[var(--tm-border-mid)] !w-2 !h-2" />
+      <Handle type="source" position={Position.Bottom} className="!bg-[var(--tm-accent)] !border-[var(--tm-border-mid)] !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} className="!bg-[var(--tm-accent)] !border-[var(--tm-border-mid)] !w-2 !h-2" />
 
       <div className="pl-2">
         <div className="text-[11px] font-semibold text-[#26312d] leading-snug line-clamp-2" style={{ fontFamily: "'Syne', sans-serif" }}>

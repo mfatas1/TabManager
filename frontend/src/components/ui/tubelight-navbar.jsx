@@ -26,7 +26,7 @@ export function NavBar({ items, className }) {
         className,
       )}
     >
-      <div className="flex items-center gap-1 bg-white/90 border border-[#d8ded8] backdrop-blur py-1 px-1 rounded-lg shadow-sm">
+      <div className="flex items-center gap-1 bg-white/90 border border-[#e2daf0] backdrop-blur py-1 px-1 rounded-lg shadow-sm">
         {isAuthenticated && items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name
@@ -37,8 +37,8 @@ export function NavBar({ items, className }) {
               to={currentTag && (item.url === '/library' || item.url === '/graph') ? `${item.url}?tag=${currentTag}` : item.url}
               className={cn(
                 "relative cursor-pointer text-sm font-semibold px-5 py-2 rounded-md transition-colors",
-                "text-[#68746f] hover:text-[#26312d]",
-                isActive && "bg-[#e7efea] text-[#5b21b6]",
+                "text-[#6b6080] hover:text-[#26312d]",
+                isActive && "bg-[#e7efea] text-[#7a59ae]",
               )}
             >
               <span className="hidden md:inline">{item.name}</span>
@@ -49,13 +49,13 @@ export function NavBar({ items, className }) {
             </Link>
           )
         })}
-        <div className="mx-1 h-5 w-px bg-[#d8ded8]" />
+        <div className="mx-1 h-5 w-px bg-[#e2daf0]" />
         {isAuthenticated ? (
           <button
             type="button"
             onClick={signOut}
             title={user?.email ? `Sign out ${user.email}` : 'Sign out'}
-            className="relative cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-[#68746f] transition-colors hover:text-[#26312d]"
+            className="relative cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-[#6b6080] transition-colors hover:text-[#26312d]"
           >
             <span className="hidden md:inline">Sign out</span>
             <span className="md:hidden">
@@ -68,8 +68,8 @@ export function NavBar({ items, className }) {
             className={cn(
               "relative cursor-pointer rounded-md px-3 py-2 text-sm font-semibold transition-colors",
               location.pathname === '/login'
-                ? "bg-[#e7efea] text-[#5b21b6]"
-                : "text-[#68746f] hover:text-[#26312d]",
+                ? "bg-[#e7efea] text-[#7a59ae]"
+                : "text-[#6b6080] hover:text-[#26312d]",
             )}
           >
             <span className="hidden md:inline">Sign in</span>
