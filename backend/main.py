@@ -308,10 +308,13 @@ Summary rules:
 - If the content is sparse, summarize only what can be confidently inferred.
 
 Topic rules for "broad":
-- Return 1 or 2 topics. Return 2 whenever the content meaningfully covers two distinct fields (e.g. a paper on brain-computer interfaces spans "neuroscience" and "software-engineering"). Return 1 only if the content is clearly focused on a single field.
+Follow these steps in order:
+
+Step 1 — Always find the 2 best topics for this content, ignoring existing topics entirely.
+Step 2 — For each of the 2 topics, check the existing topics list. If an existing topic is essentially the same concept (e.g. you chose "artificial-intelligence" and "machine-learning" exists, or you chose "ML" and "machine-learning" exists), replace yours with the existing one. Only substitute on a very close semantic match — not just because it loosely relates.
+Step 3 — Compare your 2 topics to each other. If they are clearly distinct fields that together provide meaningful insight about the content (e.g. "neuroscience" + "software-engineering", "finance" + "machine-learning"), return both. If they are too similar to each other (e.g. "machine-learning" + "artificial-intelligence", "physics" + "mathematics"), drop the weaker one and return only 1.
+
 - Topics should be library sections, not detailed descriptors.
-- Choose topics based ONLY on the page content. Completely ignore the existing topics list when deciding.
-- After choosing, check the existing topics list: only swap in an existing topic if it is an exact or near-exact match (e.g. you chose "machine-learning" and "machine-learning" already exists). Do NOT substitute just because an existing topic is loosely related.
 - Prefer stable, reusable fields like "machine-learning", "software-engineering", "physics", "startups", "finance", "climate", "neuroscience", "product-design", "mechanical-engineering", "artificial-intelligence", "mathematics", "biology".
 - Do not use narrow concepts as topics. Examples that are too narrow: "model-explainability", "startup-strategies", "algorithm-analysis", "transformer-models", "momentum-gradient-descent".
 
