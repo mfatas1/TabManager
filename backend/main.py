@@ -308,7 +308,7 @@ Summary rules:
 - If the content is sparse, summarize only what can be confidently inferred.
 
 Topic rules for "broad":
-- Return 1 or 2 topics — only return 2 if the content genuinely spans two distinct fields.
+- Return 1 or 2 topics. Return 2 whenever the content meaningfully covers two distinct fields (e.g. a paper on brain-computer interfaces spans "neuroscience" and "software-engineering"). Return 1 only if the content is clearly focused on a single field.
 - Topics should be library sections, not detailed descriptors.
 - Choose topics based ONLY on the page content. Completely ignore the existing topics list when deciding.
 - After choosing, check the existing topics list: only swap in an existing topic if it is an exact or near-exact match (e.g. you chose "machine-learning" and "machine-learning" already exists). Do NOT substitute just because an existing topic is loosely related.
