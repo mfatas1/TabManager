@@ -63,10 +63,12 @@ def get_openai_client():
         return None
 
 # Create all tables in the database
-# This will create the links, tags, and link_tags tables
-# Note: If you're updating an existing database, you may need to add the tag_type column manually
-# or drop and recreate the database: dropdb tabmanager && createdb tabmanager
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    logger.info("✓ Database tables created/verified")
+except Exception as e:
+    logger.error(f"Failed to create database tables: {e}")
+    raise
 
 from sqlalchemy import text
 

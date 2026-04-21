@@ -9,6 +9,10 @@ load_dotenv()
 # Get database URL from environment variable
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://username:password@localhost:5432/tabmanager")
 
+# Render (and some other hosts) provide postgres:// URLs, but SQLAlchemy requires postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Create SQLAlchemy engine
 # This is the connection pool to your PostgreSQL database
 engine = create_engine(DATABASE_URL)
