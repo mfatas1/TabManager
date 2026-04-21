@@ -99,7 +99,7 @@ export default function Projects() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
+    <div className="min-h-screen bg-[#f7f8f5] text-[#1e1b2e]">
       <div className="relative border-b border-[#e8dff2]">
         <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-14">
           <div className="flex flex-col items-center text-center">
@@ -122,19 +122,19 @@ export default function Projects() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Project name"
                   disabled={creating}
-                  className="px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
+                  className="px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                 />
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Short description"
                   disabled={creating}
-                  className="px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
+                  className="px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={creating || !name.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {creating ? 'Creating...' : 'Create'}
@@ -156,9 +156,9 @@ export default function Projects() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="rounded-lg border border-[#e8dff2] bg-white p-5">
-                <div className="h-4 w-2/3 rounded bg-[#edf2ee] animate-pulse mb-3" />
-                <div className="h-3 w-full rounded bg-[#eef2ef] animate-pulse mb-2" />
-                <div className="h-3 w-1/2 rounded bg-[#eef2ef] animate-pulse" />
+                <div className="h-4 w-2/3 rounded bg-[var(--tm-accent-bg-mid)] animate-pulse mb-3" />
+                <div className="h-3 w-full rounded bg-[var(--tm-accent-bg-mid)] animate-pulse mb-2" />
+                <div className="h-3 w-1/2 rounded bg-[var(--tm-accent-bg-mid)] animate-pulse" />
               </div>
             ))}
           </div>
@@ -172,12 +172,12 @@ export default function Projects() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search projects..."
-                className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[var(--tm-border)] rounded-full bg-white text-[#26312d] placeholder:text-[var(--tm-text-faint)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
+                className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[var(--tm-border)] rounded-full bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-faint)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tm-text-muted)] hover:text-[#6b5fa0]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tm-text-muted)] hover:text-[var(--tm-accent-hover)]"
                   aria-label="Clear project search"
                 >
                   <X className="size-3" />
@@ -192,7 +192,7 @@ export default function Projects() {
             <div className="size-14 mb-6 rounded-lg border border-[var(--tm-border)] bg-white flex items-center justify-center">
               <FolderKanban className="size-6 text-[var(--tm-text-disabled)]" />
             </div>
-            <h2 className="font-display text-lg font-semibold text-[#6b5fa0] mb-2">No projects yet</h2>
+            <h2 className="font-display text-lg font-semibold text-[var(--tm-accent-hover)] mb-2">No projects yet</h2>
             <p className="font-mono text-xs text-[var(--tm-text-muted)] uppercase tracking-widest">Create one above to start grouping links</p>
           </div>
         )}
@@ -201,7 +201,7 @@ export default function Projects() {
           <div className="text-center py-16">
             <p className="text-sm text-[var(--tm-text-secondary)]">
               No projects matching{' '}
-              <span className="font-mono text-[#6b5fa0]">"{searchQuery}"</span>.{' '}
+              <span className="font-mono text-[var(--tm-accent-hover)]">"{searchQuery}"</span>.{' '}
               <button
                 onClick={() => setSearchQuery('')}
                 className="text-[var(--tm-accent)] hover:text-[var(--tm-accent-hover)] underline underline-offset-2"
@@ -267,12 +267,12 @@ function ProjectGrid({ projects, archived = false, onArchiveToggle, onDelete }) 
         <Link
           key={project.id}
           to={`/projects/${project.id}`}
-          className={`group rounded-lg border border-[#e8dff2] bg-white p-5 hover:border-[#b7cabe] hover:-translate-y-0.5 transition-all ${
+          className={`group rounded-lg border border-[#e8dff2] bg-white p-5 hover:border-[#c4b5e8] hover:-translate-y-0.5 transition-all ${
             archived ? 'opacity-70' : ''
           }`}
         >
           <div className="flex items-start justify-between gap-3 mb-3">
-            <h2 className="font-display text-base font-semibold text-[#26312d] leading-snug">
+            <h2 className="font-display text-base font-semibold text-[#1e1b2e] leading-snug">
               {project.name}
             </h2>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">

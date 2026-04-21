@@ -8,7 +8,7 @@ export default function LandingPage() {
   const primaryLabel = isAuthenticated ? 'Get started' : 'Sign in';
 
   return (
-    <div className="min-h-screen bg-[#f7f8f5] text-[#26312d] flex flex-col">
+    <div className="min-h-screen bg-[#f7f8f5] text-[#1e1b2e] flex flex-col">
 
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 pt-32 pb-24 text-center">
@@ -33,7 +33,7 @@ export default function LandingPage() {
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             to={primaryPath}
-            className="inline-flex items-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-7 py-3.5 text-sm font-semibold text-white hover:bg-[var(--tm-accent-hover)] transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-7 py-3.5 text-sm font-semibold text-white hover:bg-[var(--tm-accent-press)] transition-colors"
           >
             {loading ? 'Loading...' : primaryLabel}
             <ArrowRight className="size-4" />
@@ -41,7 +41,7 @@ export default function LandingPage() {
           {isAuthenticated && (
             <Link
               to="/graph"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--tm-border-mid)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--tm-accent-hover)] hover:border-[#9fb4aa] transition-colors"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--tm-border-mid)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--tm-accent-hover)] hover:border-[#b09fd4] transition-colors"
             >
               View graph
               <Network className="size-4" />
@@ -129,7 +129,7 @@ function Step({ number, title, description }) {
   return (
     <div className="flex flex-col gap-4">
       <span className="font-mono text-[11px] tracking-[0.2em] text-[var(--tm-text-muted)]">{number}</span>
-      <h3 className="font-display text-lg font-semibold text-[#26312d] leading-snug">{title}</h3>
+      <h3 className="font-display text-lg font-semibold text-[#1e1b2e] leading-snug">{title}</h3>
       <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed">{description}</p>
     </div>
   );
@@ -141,7 +141,7 @@ function FeatureCard({ icon, title, description }) {
       <div className="mb-5 size-9 rounded-md bg-[var(--tm-accent-bg)] border border-[var(--tm-border)] flex items-center justify-center">
         {icon}
       </div>
-      <h3 className="font-display text-sm font-semibold text-[#26312d] mb-2">{title}</h3>
+      <h3 className="font-display text-sm font-semibold text-[#1e1b2e] mb-2">{title}</h3>
       <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed">{description}</p>
     </div>
   );

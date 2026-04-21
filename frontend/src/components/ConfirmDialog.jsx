@@ -21,9 +21,9 @@ export default function ConfirmDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md rounded-lg border-[var(--tm-border)] bg-white p-6 text-[#26312d] shadow-xl">
+      <AlertDialogContent className="max-w-md rounded-lg border-[var(--tm-border)] bg-white p-6 text-[#1e1b2e] shadow-xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="font-display text-lg font-semibold text-[#26312d]">
+          <AlertDialogTitle className="font-display text-lg font-semibold text-[#1e1b2e]">
             {title}
           </AlertDialogTitle>
           {description && (
@@ -41,7 +41,7 @@ export default function ConfirmDialog({
             className={`rounded-md px-4 py-2 text-sm font-semibold text-white ${
               destructive
                 ? 'bg-[#b94a48] hover:bg-[#9d3c3a]'
-                : 'bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-hover)]'
+                : 'bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-press)]'
             }`}
           >
             {confirmLabel}

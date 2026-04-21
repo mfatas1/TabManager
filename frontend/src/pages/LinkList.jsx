@@ -277,7 +277,7 @@ function LinkList() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
+    <div className="min-h-screen bg-[#f7f8f5] text-[#1e1b2e]">
 
       {/* ── Hero / Input ──────────────────────────────────────── */}
       <div className="relative border-b border-[#e8dff2] overflow-hidden">
@@ -304,12 +304,12 @@ function LinkList() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
                   disabled={submitting}
-                  className="flex-1 px-4 py-3 font-mono text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50 transition-all"
+                  className="flex-1 px-4 py-3 font-mono text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={submitting || !url.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-all"
                 >
                   <Plus className="size-4" />
                   {submitting ? 'Saving…' : 'Save'}
@@ -317,7 +317,7 @@ function LinkList() {
               </div>
 
               {submitSuccess && (
-                <p className="mt-3 font-mono text-[11px] text-emerald-400 tracking-wide text-center">
+                <p className="mt-3 font-mono text-[11px] text-[var(--tm-accent)] tracking-wide text-center">
                   ✓ LINK SAVED
                 </p>
               )}
@@ -347,10 +347,10 @@ function LinkList() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search links…"
-              className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[var(--tm-border)] rounded-full bg-white text-[#26312d] placeholder:text-[var(--tm-text-faint)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
+              className="w-full pl-9 pr-8 py-2 font-mono text-[11px] border border-[var(--tm-border)] rounded-full bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-faint)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tm-text-muted)] hover:text-[#6b5fa0]">
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tm-text-muted)] hover:text-[var(--tm-accent-hover)]">
                 <X className="size-3" />
               </button>
             )}
@@ -384,8 +384,8 @@ function LinkList() {
               onClick={clearFilter}
               className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                 !selectedTag
-                  ? 'bg-[#e7efea] border-[#b7c6bd] text-[#26312d]'
-                  : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-faint)] hover:text-[#6b5fa0]'
+                  ? 'bg-[#ede9f8] border-[#c4b5e8] text-[#1e1b2e]'
+                  : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-faint)] hover:text-[var(--tm-accent-hover)]'
               }`}
             >
               All <span className="opacity-50">{links.length}</span>
@@ -406,7 +406,7 @@ function LinkList() {
             {hiddenCount > 0 && (
               <button
                 onClick={() => setShowAllTags(v => !v)}
-                className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[var(--tm-border)] text-[var(--tm-text-disabled)] hover:text-[#6b5fa0] hover:border-[var(--tm-accent-faint)] transition-all"
+                className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[var(--tm-border)] text-[var(--tm-text-disabled)] hover:text-[var(--tm-accent-hover)] hover:border-[var(--tm-accent-faint)] transition-all"
               >
                 {showAllTags ? 'show less' : `+${hiddenCount} more`}
               </button>
@@ -419,12 +419,12 @@ function LinkList() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, idx) => (
               <div key={idx} className="rounded-lg border border-[#e8dff2] bg-white p-5">
-                <div className="h-4 w-3/4 rounded bg-[#edf2ee] animate-pulse mb-3" />
-                <div className="h-3 w-full rounded bg-[#eef2ef] animate-pulse mb-2" />
-                <div className="h-3 w-2/3 rounded bg-[#eef2ef] animate-pulse mb-4" />
+                <div className="h-4 w-3/4 rounded bg-[var(--tm-accent-bg-mid)] animate-pulse mb-3" />
+                <div className="h-3 w-full rounded bg-[var(--tm-accent-bg-mid)] animate-pulse mb-2" />
+                <div className="h-3 w-2/3 rounded bg-[var(--tm-accent-bg-mid)] animate-pulse mb-4" />
                 <div className="flex gap-2">
-                  <div className="h-5 w-16 rounded-full bg-[#eef2ef] animate-pulse" />
-                  <div className="h-5 w-20 rounded-full bg-[#eef2ef] animate-pulse" />
+                  <div className="h-5 w-16 rounded-full bg-[var(--tm-accent-bg-mid)] animate-pulse" />
+                  <div className="h-5 w-20 rounded-full bg-[var(--tm-accent-bg-mid)] animate-pulse" />
                 </div>
               </div>
             ))}
@@ -442,7 +442,7 @@ function LinkList() {
             <div className="size-14 mb-6 rounded-lg border border-[var(--tm-border)] bg-white flex items-center justify-center">
               <Plus className="size-6 text-[var(--tm-text-disabled)]" />
             </div>
-            <h2 className="font-display text-lg font-semibold text-[#6b5fa0] mb-2">Empty library</h2>
+            <h2 className="font-display text-lg font-semibold text-[var(--tm-accent-hover)] mb-2">Empty library</h2>
             <p className="font-mono text-xs text-[var(--tm-text-muted)] uppercase tracking-widest">Paste a URL above to begin</p>
           </div>
         )}
@@ -451,7 +451,7 @@ function LinkList() {
           <div className="text-center py-16">
             <p className="text-sm text-[var(--tm-text-secondary)]">
               No links tagged{' '}
-              <span className="font-mono text-[#6b5fa0]">"{selectedTag}"</span>.{' '}
+              <span className="font-mono text-[var(--tm-accent-hover)]">"{selectedTag}"</span>.{' '}
               <button onClick={clearFilter} className="text-[var(--tm-accent)] hover:text-[var(--tm-accent-hover)] underline underline-offset-2">
                 Clear filter
               </button>
@@ -482,19 +482,19 @@ function LinkList() {
                     selectedLink?.id === link.id
                       ? 'border-[var(--tm-accent)]'
                       : isHighlighted
-                      ? 'border-[#7aa390]'
-                      : 'border-[#e8dff2] hover:border-[#b7cabe]'
+                      ? 'border-[#a990d4]'
+                      : 'border-[#e8dff2] hover:border-[#c4b5e8]'
                   } cursor-pointer`}
                 >
                   {/* Left accent bar */}
                   <div className={`absolute left-0 top-0 bottom-0 w-[2.5px] rounded-l-xl transition-colors ${
-                    isHighlighted ? 'bg-[#5a9b86]' : 'bg-[#c7ddd2] group-hover:bg-[#5a9b86]/50'
+                    isHighlighted ? 'bg-[#7a59ae]' : 'bg-[#e4d8f0] group-hover:bg-[#7a59ae]/50'
                   }`} />
 
                   <div className="pl-5 pr-4 pt-4 pb-4 flex flex-col gap-2.5 flex-1">
                     {/* Title + actions */}
                     <div className="flex justify-between items-start gap-2">
-                      <h3 className="font-display text-sm font-semibold text-[#26312d] line-clamp-2 leading-snug">
+                      <h3 className="font-display text-sm font-semibold text-[#1e1b2e] line-clamp-2 leading-snug">
                         {link.title || 'Untitled'}
                       </h3>
                       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 flex-shrink-0 transition-all">
@@ -548,7 +548,7 @@ function LinkList() {
                                 className={`font-mono px-2.5 py-0.5 rounded-full text-[10px] tracking-wide transition-all ${
                                   isActive
                                     ? 'bg-[var(--tm-accent-hover)] text-white'
-                                    : 'bg-[var(--tm-accent-bg)] text-[var(--tm-accent)]/80 hover:bg-[#f0ebf8] hover:text-[var(--tm-accent-hover)]'
+                                    : 'bg-[var(--tm-accent-bg)] text-[var(--tm-accent)]/80 hover:bg-[var(--tm-accent-bg-mid)] hover:text-[var(--tm-accent-hover)]'
                                 }`}
                               >
                                 {tagName}
@@ -560,7 +560,7 @@ function LinkList() {
                     )}
 
                     {/* Date */}
-                    <div className="font-mono text-[10px] text-[#b1bab5] pt-1">
+                    <div className="font-mono text-[10px] text-[#b0a8c8] pt-1">
                       {new Date(link.date_saved).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
                   </div>
@@ -575,7 +575,7 @@ function LinkList() {
       {editingLink && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm" onClick={() => setEditingLink(null)}>
           <div className="w-full max-w-lg bg-white rounded-xl border border-[#e8dff2] shadow-xl p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h2 className="font-display text-lg font-semibold text-[#26312d] mb-1">Edit link</h2>
+            <h2 className="font-display text-lg font-semibold text-[#1e1b2e] mb-1">Edit link</h2>
             <p className="font-mono text-[11px] text-[var(--tm-text-muted)] mb-5 truncate">{editingLink.url}</p>
             <div className="space-y-4">
               <div>
@@ -583,7 +583,7 @@ function LinkList() {
                 <input
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
+                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#1e1b2e] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 transition-all"
                 />
               </div>
               <div>
@@ -592,7 +592,7 @@ function LinkList() {
                   value={editSummary}
                   onChange={(e) => setEditSummary(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 resize-none transition-all"
+                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#1e1b2e] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20 resize-none transition-all"
                 />
               </div>
               <TagEditor
@@ -612,7 +612,7 @@ function LinkList() {
               <button
                 onClick={handleSaveEdit}
                 disabled={editSaving}
-                className="flex-1 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-hover)] disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-press)] disabled:opacity-50 transition-colors"
               >
                 {editSaving ? 'Saving…' : 'Save changes'}
               </button>
@@ -642,7 +642,7 @@ function LinkList() {
               </button>
               <button
                 onClick={closePanel}
-                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[var(--tm-text-disabled)] hover:text-[#26312d] transition-colors"
+                className="p-2 rounded-lg hover:bg-[#f5f0fb] text-[var(--tm-text-disabled)] hover:text-[#1e1b2e] transition-colors"
                 title="Close panel"
               >
                 <X className="size-4" />
@@ -652,7 +652,7 @@ function LinkList() {
 
           <div className="flex-1 overflow-y-auto px-6 py-6">
             <div className="border-l-2 border-[var(--tm-border-mid)] pl-4 mb-8">
-              <h3 className="font-display text-base font-semibold text-[#26312d] leading-snug">
+              <h3 className="font-display text-base font-semibold text-[#1e1b2e] leading-snug">
                 {selectedLink.title || 'Untitled'}
               </h3>
             </div>
@@ -688,7 +688,7 @@ function LinkList() {
                         <button
                           key={tag.id || tagName}
                           onClick={(e) => handleTagClick(tagName, e)}
-                          className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)] hover:bg-[#f0ebf8] transition-colors"
+                          className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)] hover:bg-[var(--tm-accent-bg-mid)] transition-colors"
                         >
                           {tagName}
                         </button>
@@ -734,7 +734,7 @@ function LinkList() {
                         key={p.id}
                         href={`/projects/${p.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)] hover:bg-[#f0ebf8] transition-colors"
+                        className="inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)] hover:bg-[var(--tm-accent-bg-mid)] transition-colors"
                       >
                         <FolderOpen className="size-2.5" />
                         {p.name}
@@ -757,7 +757,7 @@ function LinkList() {
                       type="button"
                       onClick={handleAddToProject}
                       disabled={!selectedProjectId}
-                      className="px-4 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                      className="px-4 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                     >
                       Add
                     </button>
@@ -775,7 +775,7 @@ function LinkList() {
               href={selectedLink.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-hover)] text-white text-sm font-semibold rounded-md transition-colors"
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-press)] text-white text-sm font-semibold rounded-md transition-colors"
             >
               <ExternalLink className="size-4" />
               Open Link

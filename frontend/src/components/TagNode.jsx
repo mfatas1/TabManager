@@ -7,8 +7,8 @@ export default function TagNode({ data, selected }) {
         relative flex flex-col items-center justify-center
         rounded-full border-2 transition-all cursor-pointer
         ${selected
-          ? 'border-[var(--tm-accent)] bg-[#f0ebf8]'
-          : 'border-[var(--tm-border-mid)] bg-[var(--tm-accent-bg)] hover:border-[#7aa390] hover:bg-[#f0ebf8]'
+          ? 'border-[var(--tm-accent)] bg-[var(--tm-accent-bg-mid)]'
+          : 'border-[var(--tm-border-mid)] bg-[var(--tm-accent-bg)] hover:border-[#a990d4] hover:bg-[var(--tm-accent-bg-mid)]'
         }
       `}
       style={{ width: 100, height: 100 }}

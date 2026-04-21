@@ -86,13 +86,13 @@ export default function TagEditor({ label, tags, options, onChange }) {
             }
           }}
           placeholder={`Add ${label.toLowerCase()}`}
-          className="min-w-0 flex-1 px-3 py-2.5 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20"
+          className="min-w-0 flex-1 px-3 py-2.5 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20"
         />
         <button
           type="button"
           onClick={() => addTag(query)}
           disabled={!normalizeTag(query)}
-          className="px-3 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed"
+          className="px-3 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed"
         >
           <Plus className="size-4" />
         </button>
@@ -104,7 +104,7 @@ export default function TagEditor({ label, tags, options, onChange }) {
                 key={option}
                 type="button"
                 onClick={() => addTag(option)}
-                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#26312d] hover:bg-[#f7f8f5] transition-colors"
+                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#1e1b2e] hover:bg-[#f7f8f5] transition-colors"
               >
                 {option}
               </button>
@@ -113,7 +113,7 @@ export default function TagEditor({ label, tags, options, onChange }) {
               <button
                 type="button"
                 onClick={() => addTag(query)}
-                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-bg)] transition-colors border-t border-[#edf2ee]"
+                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-bg)] transition-colors border-t border-[var(--tm-accent-bg-mid)]"
               >
                 Create "{normalizeTag(query)}"
               </button>

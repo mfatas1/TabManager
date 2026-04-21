@@ -141,7 +141,7 @@ export default function Graph() {
           <div className="size-14 mx-auto mb-6 rounded-lg border border-[var(--tm-border)] bg-white flex items-center justify-center">
             <Tag className="size-6 text-[var(--tm-text-disabled)]" />
           </div>
-          <h2 className="font-display text-lg font-semibold text-[#6b5fa0] mb-2">No links yet</h2>
+          <h2 className="font-display text-lg font-semibold text-[var(--tm-accent-hover)] mb-2">No links yet</h2>
           <p className="font-mono text-xs text-[var(--tm-text-muted)] uppercase tracking-widest">Add some links to see the graph</p>
         </div>
       </div>
@@ -174,8 +174,8 @@ export default function Graph() {
                   onClick={clearTagFilter}
                   className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                     !selectedTag
-                      ? 'bg-[#e7efea] border-[#b7c6bd] text-[#26312d]'
-                      : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-faint)] hover:text-[#6b5fa0]'
+                      ? 'bg-[#ede9f8] border-[#c4b5e8] text-[#1e1b2e]'
+                      : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-faint)] hover:text-[var(--tm-accent-hover)]'
                   }`}
                 >
                   All <span className="opacity-50">{links.length}</span>
@@ -197,7 +197,7 @@ export default function Graph() {
                 {hiddenCount > 0 && (
                   <button
                     onClick={() => setShowAllTags(v => !v)}
-                    className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[var(--tm-border)] text-[var(--tm-text-disabled)] hover:text-[#6b5fa0] hover:border-[var(--tm-accent-faint)] transition-all"
+                    className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[var(--tm-border)] text-[var(--tm-text-disabled)] hover:text-[var(--tm-accent-hover)] hover:border-[var(--tm-accent-faint)] transition-all"
                   >
                     {showAllTags ? 'show less' : `+${hiddenCount} more`}
                   </button>
@@ -238,7 +238,7 @@ export default function Graph() {
               <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--tm-text-muted)] uppercase">Link Details</span>
               <button
                 onClick={closePanel}
-                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[var(--tm-text-disabled)] hover:text-[#26312d] transition-colors"
+                className="p-2 rounded-lg hover:bg-[#f5f0fb] text-[var(--tm-text-disabled)] hover:text-[#1e1b2e] transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -247,7 +247,7 @@ export default function Graph() {
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {/* Left accent */}
               <div className="border-l-2 border-[var(--tm-border-mid)] pl-4 mb-8">
-                <h3 className="font-display text-base font-semibold text-[#26312d] leading-snug">
+                <h3 className="font-display text-base font-semibold text-[#1e1b2e] leading-snug">
                   {selectedLink.title || 'Untitled'}
                 </h3>
               </div>
@@ -324,7 +324,7 @@ export default function Graph() {
                         type="button"
                         onClick={handleAddToProject}
                         disabled={!selectedProjectId}
-                        className="px-4 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                       >
                         Add
                       </button>
@@ -342,7 +342,7 @@ export default function Graph() {
                 href={selectedLink.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-hover)] text-white text-sm font-semibold rounded-md transition-colors"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-press)] text-white text-sm font-semibold rounded-md transition-colors"
               >
                 <ExternalLink className="size-4" />
                 Open Link

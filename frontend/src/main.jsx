@@ -23,7 +23,7 @@ const navItems = [
 
 export function AppLayout() {
   return (
-    <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
+    <div className="min-h-screen bg-[#f7f8f5] text-[#1e1b2e]">
       <NavBar items={navItems} />
       <Routes>
         <Route path="/" element={<LandingPage />} />

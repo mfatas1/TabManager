@@ -212,7 +212,7 @@ export default function ProjectDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
+    <div className="min-h-screen bg-[#f7f8f5] text-[#1e1b2e]">
       <div className="relative border-b border-[#e8dff2]">
         <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-12">
           <Link
@@ -261,12 +261,12 @@ export default function ProjectDetail() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
                   disabled={savingUrl}
-                  className="flex-1 px-4 py-3 font-mono text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
+                  className="flex-1 px-4 py-3 font-mono text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={savingUrl || !url.trim()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {savingUrl ? 'Saving...' : 'Add'}
@@ -377,7 +377,7 @@ export default function ProjectDetail() {
                           onChange={(e) => setLinkedTaskTitle(e.target.value)}
                           placeholder="Task title"
                           disabled={creatingLinkedTask}
-                          className="mb-2 w-full rounded-md border border-[var(--tm-border)] bg-white px-3 py-2 text-sm text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
+                          className="mb-2 w-full rounded-md border border-[var(--tm-border)] bg-white px-3 py-2 text-sm text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                         />
                         <textarea
                           value={linkedTaskDescription}
@@ -385,12 +385,12 @@ export default function ProjectDetail() {
                           placeholder="Optional note"
                           disabled={creatingLinkedTask}
                           rows={2}
-                          className="mb-2 w-full resize-none rounded-md border border-[var(--tm-border)] bg-white px-3 py-2 text-sm text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
+                          className="mb-2 w-full resize-none rounded-md border border-[var(--tm-border)] bg-white px-3 py-2 text-sm text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                         />
                         <button
                           type="submit"
                           disabled={creatingLinkedTask || !linkedTaskTitle.trim()}
-                          className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                          className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                         >
                           <Plus className="size-3.5" />
                           {creatingLinkedTask ? 'Adding...' : 'Add task'}
@@ -412,7 +412,7 @@ export default function ProjectDetail() {
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder="Task title"
                   disabled={creatingTask}
-                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
+                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50"
                 />
                 <textarea
                   value={taskDescription}
@@ -420,7 +420,7 @@ export default function ProjectDetail() {
                   placeholder="Optional note"
                   disabled={creatingTask}
                   rows={3}
-                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#26312d] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50 resize-none"
+                  className="w-full px-4 py-3 text-sm border border-[var(--tm-border)] rounded-md bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/30 disabled:opacity-50 resize-none"
                 />
                 {links.length > 0 && (
                   <div className="rounded-md border border-[var(--tm-border)] bg-[var(--tm-surface-tinted)]">
@@ -484,7 +484,7 @@ export default function ProjectDetail() {
                                 {selected && <Check className="size-3 text-white" />}
                               </span>
                               <span className="min-w-0">
-                                <span className="block truncate text-xs font-semibold text-[#26312d]">
+                                <span className="block truncate text-xs font-semibold text-[#1e1b2e]">
                                   {linked.title || 'Untitled'}
                                 </span>
                                 <span className="block truncate font-mono text-[10px] text-[var(--tm-text-muted)]">
@@ -501,7 +501,7 @@ export default function ProjectDetail() {
                 <button
                   type="submit"
                   disabled={creatingTask || !taskTitle.trim()}
-                  className="inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-hover)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-md hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {creatingTask ? 'Adding...' : 'Add task'}
@@ -521,7 +521,7 @@ export default function ProjectDetail() {
                   <div key={task.id} className="rounded-lg border border-[#e8dff2] bg-[var(--tm-surface-tinted)] p-3">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <h3 className={`text-sm font-semibold ${task.status === 'done' ? 'line-through text-[var(--tm-text-disabled)]' : 'text-[#26312d]'}`}>
+                        <h3 className={`text-sm font-semibold ${task.status === 'done' ? 'line-through text-[var(--tm-text-disabled)]' : 'text-[#1e1b2e]'}`}>
                           {task.title}
                         </h3>
                         {task.description && (

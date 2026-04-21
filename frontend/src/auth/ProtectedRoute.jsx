@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children }) {
 
   if (!hasSupabaseConfig) {
     return (
-      <main className="min-h-screen bg-[#f7f8f5] px-6 pt-32 text-[#26312d]">
+      <main className="min-h-screen bg-[#f7f8f5] px-6 pt-32 text-[#1e1b2e]">
         <div className="mx-auto max-w-xl rounded-lg border border-[var(--tm-border)] bg-white p-6 shadow-sm">
           <p className="mb-2 text-sm font-semibold text-[var(--tm-accent-hover)]">Supabase is not configured yet.</p>
           <p className="text-sm leading-relaxed text-[var(--tm-text-secondary)]">

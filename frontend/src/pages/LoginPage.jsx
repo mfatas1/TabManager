@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f8f5] px-6 py-28 text-[#26312d]">
+    <main className="min-h-screen bg-[#f7f8f5] px-6 py-28 text-[#1e1b2e]">
       <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
         <section>
           <Link to="/" className="mb-8 inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-border)] bg-white px-4 py-1.5">
@@ -93,7 +93,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-[#26312d]">Email</span>
+              <span className="mb-1.5 block text-sm font-semibold text-[#1e1b2e]">Email</span>
               <input
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -105,7 +105,7 @@ export default function LoginPage() {
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-[#26312d]">Password</span>
+              <span className="mb-1.5 block text-sm font-semibold text-[#1e1b2e]">Password</span>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--tm-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--tm-accent-press)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Working...' : mode === 'login' ? 'Sign in' : 'Create account'}
               {mode === 'login' ? <LogIn className="size-4" /> : <ArrowRight className="size-4" />}

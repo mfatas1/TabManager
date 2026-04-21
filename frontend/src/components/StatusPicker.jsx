@@ -53,7 +53,7 @@ export default function StatusPicker({ value, options, onChange }) {
                 className={`w-full text-left px-3 py-1.5 font-mono text-[11px] flex items-center gap-2 transition-colors hover:bg-[#f7f8f5] ${value === opt ? 'opacity-100' : 'opacity-70'}`}
               >
                 <span className={`size-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
-                <span className={value === opt ? 'font-semibold text-[#26312d]' : 'text-[var(--tm-text-secondary)]'}>{opt}</span>
+                <span className={value === opt ? 'font-semibold text-[#1e1b2e]' : 'text-[var(--tm-text-secondary)]'}>{opt}</span>
               </button>
             );
           })}

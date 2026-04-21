@@ -24,7 +24,7 @@ export default function ProjectDropdown({ projects, value, onChange }) {
         onClick={() => setOpen((current) => !current)}
         className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-left hover:border-[var(--tm-accent-muted)] transition-colors"
       >
-        <span className={selected ? 'text-[#26312d]' : 'text-[var(--tm-text-muted)]'}>
+        <span className={selected ? 'text-[#1e1b2e]' : 'text-[var(--tm-text-muted)]'}>
           {selected ? selected.name : 'Choose project'}
         </span>
         <ChevronDown className={`size-3.5 text-[var(--tm-text-muted)] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -51,7 +51,7 @@ export default function ProjectDropdown({ projects, value, onChange }) {
                 setOpen(false);
               }}
               className={`w-full text-left px-3 py-2 flex items-center gap-2.5 text-sm transition-colors hover:bg-[#f7f8f5] ${
-                String(value) === String(project.id) ? 'text-[var(--tm-accent-hover)] font-medium' : 'text-[#26312d]'
+                String(value) === String(project.id) ? 'text-[var(--tm-accent-hover)] font-medium' : 'text-[#1e1b2e]'
               }`}
             >
               <FolderOpen className="size-3.5 text-[var(--tm-accent)] flex-shrink-0" />

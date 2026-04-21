@@ -38,6 +38,7 @@
   /* Accent shades */
   --tm-accent:          #8b6bbf;   /* main lilac */
   --tm-accent-hover:    #7a59ae;   /* darker on hover */
+  --tm-accent-press:    #6a4a9d;   /* pressed / button hover */
   --tm-accent-dark:     #7a59ae;   /* alias */
   --tm-accent-muted:    #a990d4;   /* muted icons / borders */
   --tm-accent-subtle:   #b09fd4;   /* very subtle accents */
@@ -45,8 +46,10 @@
 
   /* Accent backgrounds */
   --tm-accent-bg:       #f5f0fb;   /* light tinted bg (tags, badges) */
-  --tm-accent-bg-mid:   #ede9fe;   /* slightly deeper tinted bg */
+  --tm-accent-bg-mid:   #ede9f8;   /* active/selected state bg */
   --tm-accent-bg-deep:  #e4d8f0;   /* deeper tinted bg */
+  --tm-accent-selected: #ede9f8;   /* selected nav/button bg */
+  --tm-accent-border-selected: #c4b5e8; /* border of selected items */
 
   /* Borders */
   --tm-border:          #e2daf0;   /* default border */
