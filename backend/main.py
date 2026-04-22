@@ -323,15 +323,17 @@ Summary rules:
 - If the content is sparse, summarize only what can be confidently inferred.
 
 Topic rules for "broad":
-Follow these steps in order:
+Aim for 2-3 topics. You may return 1 if the content is very focused, or up to 4 if it genuinely spans multiple distinct fields.
 
-Step 1 — Always find the 2 best topics for this content, ignoring existing topics entirely.
-Step 2 — For each of the 2 topics, check the existing topics list. If an existing topic is essentially the same concept (e.g. you chose "artificial-intelligence" and "machine-learning" exists, or you chose "ML" and "machine-learning" exists), replace yours with the existing one. Only substitute on a very close semantic match — not just because it loosely relates.
-Step 3 — Compare your 2 topics to each other. If they are clearly distinct fields that together provide meaningful insight about the content (e.g. "neuroscience" + "software-engineering", "finance" + "machine-learning"), return both. If they are too similar to each other (e.g. "machine-learning" + "artificial-intelligence", "physics" + "mathematics"), drop the weaker one and return only 1.
+Step 1 — Pick the best topics for this content based purely on what it is actually about. Ignore the existing topics list entirely at this stage.
+Step 2 — Only replace one of your chosen topics with an existing one if they are essentially identical (e.g. you chose "machine-learning" and "machine-learning" already exists — use it). Do NOT substitute a more specific accurate term for a broader existing one (e.g. do NOT replace "macroeconomics" with "finance", or "immunology" with "biology").
+Step 3 — Drop any two topics that are redundant with each other (e.g. "machine-learning" + "artificial-intelligence" → keep the more specific one). Keep topics that represent clearly distinct angles on the content.
 
-- Topics should be library sections, not detailed descriptors.
-- Prefer stable, reusable fields like "machine-learning", "software-engineering", "physics", "startups", "finance", "climate", "neuroscience", "product-design", "mechanical-engineering", "artificial-intelligence", "mathematics", "biology".
-- Do not use narrow concepts as topics. Examples that are too narrow: "model-explainability", "startup-strategies", "algorithm-analysis", "transformer-models", "momentum-gradient-descent".
+- Topics should name a real intellectual field or discipline precisely.
+- Be specific: "macroeconomics" not "finance", "immunology" not "biology", "computer-vision" not "machine-learning" if the content is specifically about vision.
+- Good examples: "macroeconomics", "machine-learning", "software-engineering", "geopolitics", "neuroscience", "immunology", "computer-vision", "climate-science", "product-design", "mechanical-engineering", "mathematics", "astrophysics", "behavioral-economics", "cryptography", "robotics", "startups".
+- Do not use vague umbrella terms when a more precise field exists.
+- Do not use narrow single-paper concepts as topics. Examples too narrow: "model-explainability", "transformer-models", "momentum-gradient-descent", "attention-mechanism".
 
 Keyword rules for "specific":
 - Return 3-5 keywords.
@@ -395,7 +397,7 @@ Existing broad topics for this user's library:
                 broad_tags = [normalize_tag(tag) for tag in result["broad"] if tag]
 
             specific_tags = [tag for tag in specific_tags if tag][:5]
-            broad_tags = [tag for tag in broad_tags if tag][:2]
+            broad_tags = [tag for tag in broad_tags if tag][:4]
             if not broad_tags:
                 broad_tags = ["general-knowledge"]
 
