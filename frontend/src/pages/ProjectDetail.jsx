@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, ExternalLink, FileText, FolderKanban, Link2, Plus, Trash2, Upload, X } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, FileText, FolderKanban, Link2, Pencil, Plus, Trash2, Upload, X } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import StatusPicker from '../components/StatusPicker';
+import TagEditor from '../components/TagEditor';
+import { getTags } from '../api/links';
 import {
   addUrlToProject,
   addFileToProject,
@@ -63,6 +65,21 @@ export default function ProjectDetail() {
   const [creatingLinkedTask, setCreatingLinkedTask] = useState(false);
   const [highlightedLinkId, setHighlightedLinkId] = useState(null);
   const linkRefs = useRef({});
+  const [allTags, setAllTags] = useState([]);
+
+  const topicOptions = useMemo(
+    () => allTags.filter((t) => t.tag_type === 'broad').map((t) => t.name),
+    [allTags],
+  );
+  const keywordOptions = useMemo(
+    () => allTags.filter((t) => t.tag_type === 'specific').map((t) => t.name),
+    [allTags],
+  );
+
+  const getBroadTags = (tags) =>
+    (tags || []).filter((t) => (typeof t === 'string' ? false : t.tag_type === 'broad'));
+  const getSpecificTags = (tags) =>
+    (tags || []).filter((t) => (typeof t === 'string' ? true : t.tag_type !== 'broad'));
 
   const links = useMemo(() => project?.project_links || [], [project]);
   const tasks = useMemo(() => project?.tasks || [], [project]);
@@ -83,6 +100,10 @@ export default function ProjectDetail() {
   useEffect(() => {
     fetchProject({ showLoading: true });
   }, [fetchProject]);
+
+  useEffect(() => {
+    getTags().then((res) => setAllTags(res.data)).catch(() => {});
+  }, []);
 
   const friendlyError = (err, fallback = 'Something went wrong.') => {
     if (!err.response && err.message?.toLowerCase().includes('network'))
@@ -176,6 +197,16 @@ export default function ProjectDetail() {
     }
   };
 
+  const openEditModal = (link, e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setEditingLink(link);
+    setEditTitle(link.title || '');
+    setEditSummary(link.summary || '');
+    setEditTopics(getBroadTags(link.tags).map(getTagName));
+    setEditKeywords(getSpecificTags(link.tags).map(getTagName));
+  };
+
   const handleSaveEdit = async () => {
     if (!editingLink) return;
     try {
@@ -188,6 +219,7 @@ export default function ProjectDetail() {
         keywords: editKeywords,
       });
       await fetchProject();
+      getTags().then((res) => setAllTags(res.data)).catch(() => {});
       setEditingLink(null);
     } catch (err) {
       setError(friendlyError(err, 'Failed to save changes'));
@@ -433,16 +465,25 @@ export default function ProjectDetail() {
                           </a>
                         )}
                       </div>
-                      <button
-                        onClick={() => setPendingRemoval({
-                          linkId: projectLink.link_id,
-                          title: link.title || link.url,
-                        })}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-[#9aa39f] hover:text-red-400 transition-colors"
-                        title="Remove from project"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => openEditModal(link, e)}
+                          className="p-1.5 rounded-lg hover:bg-[#edf4ef] text-[#9aa39f] hover:text-[#4f8f7a] transition-colors"
+                          title="Edit node"
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setPendingRemoval({
+                            linkId: projectLink.link_id,
+                            title: link.title || link.url,
+                          })}
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-[#9aa39f] hover:text-red-400 transition-colors"
+                          title="Remove from project"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                     {link.summary && (
@@ -741,24 +782,18 @@ export default function ProjectDetail() {
                   className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 resize-none transition-all"
                 />
               </div>
-              <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Topics (comma separated)</label>
-                <input
-                  value={editTopics.join(', ')}
-                  onChange={(e) => setEditTopics(e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
-                  placeholder="e.g. machine-learning, climate"
-                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
-                />
-              </div>
-              <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Keywords (comma separated)</label>
-                <input
-                  value={editKeywords.join(', ')}
-                  onChange={(e) => setEditKeywords(e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
-                  placeholder="e.g. transformer, attention-mechanism"
-                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
-                />
-              </div>
+              <TagEditor
+                label="Topics"
+                tags={editTopics}
+                options={topicOptions}
+                onChange={setEditTopics}
+              />
+              <TagEditor
+                label="Keywords"
+                tags={editKeywords}
+                options={keywordOptions}
+                onChange={setEditKeywords}
+              />
             </div>
             <div className="flex gap-2 mt-6">
               <button onClick={() => setEditingLink(null)} className="flex-1 py-2.5 text-sm text-[#68746f] border border-[#d8ded8] rounded-lg hover:bg-[#f7f8f5] transition-colors">Cancel</button>
