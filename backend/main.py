@@ -674,23 +674,30 @@ def read_current_user(current_user: CurrentUser = Depends(get_current_user)):
 @app.post("/links", response_model=LinkResponse, status_code=201)
 def create_link(
     link: LinkCreate,
+    skip_analysis: bool = False,
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Create a new link. Scrapes the URL to get title, meta description, and tags.
-    If an existing link is incomplete, reprocess it instead of failing.
+    Pass skip_analysis=true to save instantly without AI processing.
     """
-    # Check if this user already saved the URL.
     existing_link = db.query(Link).filter(
         Link.url == link.url,
         user_owned_filter(Link, current_user.id),
     ).first()
     if existing_link:
-        if not existing_link.summary or not existing_link.tags:
+        if not skip_analysis and (not existing_link.summary or not existing_link.tags):
             return analyze_and_apply_link(db, existing_link)
         raise HTTPException(status_code=400, detail="Link with this URL already exists in your library")
-    
+
+    if skip_analysis:
+        db_link = Link(url=link.url, user_id=current_user.id)
+        db.add(db_link)
+        db.commit()
+        db.refresh(db_link)
+        return db_link
+
     return get_or_create_analyzed_link(db, link.url, current_user.id)
 
 
@@ -1062,12 +1069,13 @@ def delete_task(
 @app.post("/files", response_model=LinkResponse, status_code=201)
 async def upload_file(
     file: UploadFile = FastAPIFile(...),
+    skip_analysis: bool = False,
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
 ):
     """
-    Upload a file (PDF, TXT, MD, DOCX), extract text, and analyse it
-    with the same LLM pipeline used for URLs.
+    Upload a file (PDF, TXT, MD, DOCX), extract text, and analyse it.
+    Pass skip_analysis=true to save instantly without AI processing.
     """
     if file.size and file.size > MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
@@ -1079,11 +1087,6 @@ async def upload_file(
     mime_type = file.content_type or ""
     filename = file.filename or "upload"
 
-    page_text = extract_text_from_file(content, mime_type, filename)
-    if not page_text.strip():
-        raise HTTPException(status_code=422, detail="Could not extract any text from the file.")
-
-    # Use filename as a stable pseudo-URL so the item is unique per user
     pseudo_url = f"file://{current_user.id}/{filename}"
 
     existing = db.query(Link).filter(
@@ -1093,15 +1096,6 @@ async def upload_file(
     if existing:
         raise HTTPException(status_code=400, detail="A file with this name already exists in your library.")
 
-    existing_topics = get_existing_broad_topics(db, current_user.id)
-    summary, specific_tags, broad_tags = analyze_page_with_llm(
-        url=pseudo_url,
-        title=filename,
-        meta_description=None,
-        page_text=page_text,
-        existing_topics=existing_topics,
-    )
-
     db_link = Link(
         url=pseudo_url,
         user_id=current_user.id,
@@ -1110,7 +1104,27 @@ async def upload_file(
         file_name=filename,
     )
     db.add(db_link)
+
+    if skip_analysis:
+        db.commit()
+        db.refresh(db_link)
+        return db_link
+
+    page_text = extract_text_from_file(content, mime_type, filename)
+    if not page_text.strip():
+        db.commit()
+        db.refresh(db_link)
+        return db_link
+
     db.flush()
+    existing_topics = get_existing_broad_topics(db, current_user.id)
+    summary, specific_tags, broad_tags = analyze_page_with_llm(
+        url=pseudo_url,
+        title=filename,
+        meta_description=None,
+        page_text=page_text,
+        existing_topics=existing_topics,
+    )
     apply_link_analysis(db, db_link, filename, summary, specific_tags, broad_tags)
     db.commit()
     db.refresh(db_link)

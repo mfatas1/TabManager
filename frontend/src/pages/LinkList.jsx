@@ -26,6 +26,7 @@ function LinkList() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [skipAI, setSkipAI] = useState(false);
   const fileInputRef = useRef(null);
 
   const selectedTag = searchParams.get('tag');
@@ -203,7 +204,7 @@ function LinkList() {
       setSubmitting(true);
       setSubmitError(null);
       setSubmitSuccess(false);
-      await saveLink(trimmed);
+      await saveLink(trimmed, skipAI);
       setUrl('');
       setSubmitSuccess(true);
       await refetch();
@@ -223,7 +224,7 @@ function LinkList() {
       setUploading(true);
       setUploadError(null);
       setUploadSuccess(false);
-      await uploadFile(file);
+      await uploadFile(file, skipAI);
       setUploadSuccess(true);
       await refetch();
       setTimeout(() => setUploadSuccess(false), 2000);
@@ -368,6 +369,24 @@ function LinkList() {
                 <p className="mt-3 font-mono text-[11px] text-red-400 text-center">{submitError}</p>
               )}
             </form>
+
+            {/* Skip AI toggle */}
+            <label className="flex items-center gap-2 mt-3 cursor-pointer select-none w-full max-w-lg justify-end">
+              <span className="font-mono text-[11px] text-[#68746f]">Skip AI — add manually</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={skipAI}
+                onClick={() => setSkipAI(v => !v)}
+                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${
+                  skipAI ? 'bg-[#4f8f7a]' : 'bg-[#d8ded8]'
+                }`}
+              >
+                <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                  skipAI ? 'translate-x-4' : 'translate-x-0'
+                }`} />
+              </button>
+            </label>
 
             {/* File Upload */}
             <div className="w-full max-w-lg mt-3">

@@ -13,7 +13,8 @@ export const getTags = () => apiClient.get('/tags');
  * @param {string} url - The URL to save
  * @returns {Promise} Axios promise that resolves to the created link
  */
-export const saveLink = (url) => apiClient.post('/links', { url });
+export const saveLink = (url, skipAnalysis = false) =>
+  apiClient.post(`/links${skipAnalysis ? '?skip_analysis=true' : ''}`, { url });
 
 /**
  * Delete a link by ID
@@ -33,10 +34,10 @@ export const updateLink = (linkId, data) => apiClient.patch(`/links/${linkId}`, 
  * Upload a file (PDF, DOCX, TXT, MD) for text extraction and analysis
  * @param {File} file - The file to upload
  */
-export const uploadFile = (file) => {
+export const uploadFile = (file, skipAnalysis = false) => {
   const formData = new FormData();
   formData.append('file', file);
-  return apiClient.post('/files', formData, {
+  return apiClient.post(`/files${skipAnalysis ? '?skip_analysis=true' : ''}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
