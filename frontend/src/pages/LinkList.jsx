@@ -207,17 +207,17 @@ function LinkList() {
       const res = await saveLink(trimmed, skipAI);
       setUrl('');
       await refetch();
+      const newLink = res.data;
       if (skipAI) {
-        // Open the editor immediately on the blank saved link
-        const newLink = res.data;
+        // Open the edit modal immediately for manual entry
         setEditingLink(newLink);
         setEditTitle(newLink.title || '');
         setEditSummary(newLink.summary || '');
         setEditTopics([]);
         setEditKeywords([]);
       } else {
-        setSubmitSuccess(true);
-        setTimeout(() => setSubmitSuccess(false), 2000);
+        // Open the side panel to show the newly saved link
+        setSelectedLink(newLink);
       }
     } catch (err) {
       setSubmitError(friendlyError(err, 'Failed to save link. Please try again.'));
@@ -236,16 +236,15 @@ function LinkList() {
       setUploadSuccess(false);
       const res = await uploadFile(file, skipAI);
       await refetch();
+      const newLink = res.data;
       if (skipAI) {
-        const newLink = res.data;
         setEditingLink(newLink);
         setEditTitle(newLink.title || '');
         setEditSummary(newLink.summary || '');
         setEditTopics([]);
         setEditKeywords([]);
       } else {
-        setUploadSuccess(true);
-        setTimeout(() => setUploadSuccess(false), 2000);
+        setSelectedLink(newLink);
       }
     } catch (err) {
       setUploadError(friendlyError(err, 'Failed to upload file. Please try again.'));
