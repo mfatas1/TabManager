@@ -52,30 +52,30 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f8f5] px-6 py-28 text-[#1e1b2e]">
+    <main className="min-h-screen bg-[#f7f8f5] px-6 py-28 text-[#26312d]">
       <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
         <section>
-          <Link to="/" className="mb-8 inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-border)] bg-white px-4 py-1.5">
+          <Link to="/" className="mb-8 inline-flex items-center gap-2.5 rounded-md border border-[#d8ded8] bg-white px-4 py-1.5">
             <BookOpen className="size-4" />
-            <span className="font-mono text-[11px] tracking-[0.12em] text-[var(--tm-text-secondary)] uppercase">
+            <span className="font-mono text-[11px] tracking-[0.12em] text-[#68746f] uppercase">
               Folio
             </span>
           </Link>
           <h1 className="font-display max-w-xl text-4xl font-bold leading-tight md:text-6xl">
             Keep your library close.
           </h1>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-[var(--tm-text-secondary)]">
+          <p className="mt-5 max-w-md text-base leading-relaxed text-[#68746f]">
             Sign in to save links, shape projects, and keep your graph tied to your own account.
           </p>
         </section>
 
-        <section className="rounded-lg border border-[var(--tm-border)] bg-white p-6 shadow-sm">
-          <div className="mb-6 flex rounded-md border border-[var(--tm-border)] bg-[#f7f8f5] p-1">
+        <section className="rounded-lg border border-[#d8ded8] bg-white p-6 shadow-sm">
+          <div className="mb-6 flex rounded-md border border-[#d8ded8] bg-[#f7f8f5] p-1">
             <button
               type="button"
               onClick={() => setMode('login')}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                mode === 'login' ? 'bg-white text-[var(--tm-accent-hover)] shadow-sm' : 'text-[var(--tm-text-secondary)]'
+                mode === 'login' ? 'bg-white text-[#315f56] shadow-sm' : 'text-[#68746f]'
               }`}
             >
               Sign in
@@ -84,7 +84,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setMode('signup')}
               className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                mode === 'signup' ? 'bg-white text-[var(--tm-accent-hover)] shadow-sm' : 'text-[var(--tm-text-secondary)]'
+                mode === 'signup' ? 'bg-white text-[#315f56] shadow-sm' : 'text-[#68746f]'
               }`}
             >
               Sign up
@@ -93,19 +93,19 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-[#1e1b2e]">Email</span>
+              <span className="mb-1.5 block text-sm font-semibold text-[#26312d]">Email</span>
               <input
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full rounded-md border border-[var(--tm-border-mid)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--tm-accent)] focus:ring-2 focus:ring-[var(--tm-accent)]/15"
+                className="w-full rounded-md border border-[#cfd8d1] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4f8f7a] focus:ring-2 focus:ring-[#4f8f7a]/15"
               />
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-[#1e1b2e]">Password</span>
+              <span className="mb-1.5 block text-sm font-semibold text-[#26312d]">Password</span>
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 required
                 minLength={6}
-                className="w-full rounded-md border border-[var(--tm-border-mid)] bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--tm-accent)] focus:ring-2 focus:ring-[var(--tm-accent)]/15"
+                className="w-full rounded-md border border-[#cfd8d1] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#4f8f7a] focus:ring-2 focus:ring-[#4f8f7a]/15"
               />
             </label>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
               </p>
             )}
             {message && (
-              <p className="rounded-md border border-[var(--tm-border)] bg-[var(--tm-accent-bg)] px-3 py-2 text-sm text-[var(--tm-accent-hover)]">
+              <p className="rounded-md border border-[#d8ded8] bg-[#edf4ef] px-3 py-2 text-sm text-[#315f56]">
                 {message}
               </p>
             )}
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--tm-accent-press)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#315f56] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#244b44] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Working...' : mode === 'login' ? 'Sign in' : 'Create account'}
               {mode === 'login' ? <LogIn className="size-4" /> : <ArrowRight className="size-4" />}

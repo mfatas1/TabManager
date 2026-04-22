@@ -46,7 +46,7 @@ export default function TagEditor({ label, tags, options, onChange }) {
 
   return (
     <div>
-      <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">
+      <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">
         {label}
       </label>
 
@@ -55,13 +55,13 @@ export default function TagEditor({ label, tags, options, onChange }) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1.5 font-mono px-2.5 py-1 rounded-full text-[10px] bg-[var(--tm-accent-bg)] text-[var(--tm-accent-hover)] border border-[var(--tm-accent-bg-deep)]"
+              className="inline-flex items-center gap-1.5 font-mono px-2.5 py-1 rounded-full text-[10px] bg-[#edf4ef] text-[#315f56] border border-[#c8d8cf]"
             >
               {tag}
               <button
                 type="button"
                 onClick={() => removeTag(tag)}
-                className="text-[var(--tm-text-disabled)] hover:text-red-400"
+                className="text-[#7d8984] hover:text-red-400"
                 aria-label={`Remove ${tag}`}
               >
                 <X className="size-3" />
@@ -86,25 +86,25 @@ export default function TagEditor({ label, tags, options, onChange }) {
             }
           }}
           placeholder={`Add ${label.toLowerCase()}`}
-          className="min-w-0 flex-1 px-3 py-2.5 text-sm border border-[var(--tm-border)] rounded-lg bg-white text-[#1e1b2e] placeholder:text-[var(--tm-text-muted)] focus:outline-none focus:border-[var(--tm-accent-muted)] focus:ring-1 focus:ring-[var(--tm-accent-muted)]/20"
+          className="min-w-0 flex-1 px-3 py-2.5 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] placeholder:text-[#9aa39f] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20"
         />
         <button
           type="button"
           onClick={() => addTag(query)}
           disabled={!normalizeTag(query)}
-          className="px-3 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed"
+          className="px-3 py-2.5 text-sm font-semibold bg-[#315f56] text-white rounded-lg hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed"
         >
           <Plus className="size-4" />
         </button>
 
         {open && (filteredOptions.length > 0 || normalizeTag(query)) && (
-          <div className="absolute z-50 top-full mt-1.5 left-0 right-12 max-h-56 overflow-y-auto rounded-xl border border-[#e8dff2] bg-white shadow-lg shadow-black/8 py-1.5">
+          <div className="absolute z-50 top-full mt-1.5 left-0 right-12 max-h-56 overflow-y-auto rounded-xl border border-[#dfe5df] bg-white shadow-lg shadow-black/8 py-1.5">
             {filteredOptions.map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => addTag(option)}
-                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#1e1b2e] hover:bg-[#f7f8f5] transition-colors"
+                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#26312d] hover:bg-[#f7f8f5] transition-colors"
               >
                 {option}
               </button>
@@ -113,7 +113,7 @@ export default function TagEditor({ label, tags, options, onChange }) {
               <button
                 type="button"
                 onClick={() => addTag(query)}
-                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-bg)] transition-colors border-t border-[var(--tm-accent-bg-mid)]"
+                className="w-full text-left px-3 py-2 font-mono text-[11px] text-[#315f56] hover:bg-[#edf4ef] transition-colors border-t border-[#edf2ee]"
               >
                 Create "{normalizeTag(query)}"
               </button>

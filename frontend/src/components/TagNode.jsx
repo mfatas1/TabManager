@@ -7,8 +7,8 @@ export default function TagNode({ data, selected }) {
         relative flex flex-col items-center justify-center
         rounded-full border-2 transition-all cursor-pointer
         ${selected
-          ? 'border-[var(--tm-accent)] bg-[var(--tm-accent-bg-mid)]'
-          : 'border-[var(--tm-border-mid)] bg-[var(--tm-accent-bg)] hover:border-[#a990d4] hover:bg-[var(--tm-accent-bg-mid)]'
+          ? 'border-[#4f8f7a] bg-[#dceae2]'
+          : 'border-[#9cb8aa] bg-[#edf4ef] hover:border-[#7aa390] hover:bg-[#dceae2]'
         }
       `}
       style={{ width: 100, height: 100 }}
@@ -19,13 +19,13 @@ export default function TagNode({ data, selected }) {
       <Handle type="target" position={Position.Top} className="opacity-0 !w-0 !h-0" />
 
       <span
-        className="text-[12px] font-bold text-[var(--tm-accent-hover)] text-center leading-tight px-3"
+        className="text-[12px] font-bold text-[#315f56] text-center leading-tight px-3"
         style={{ fontFamily: "'Syne', sans-serif" }}
       >
         {data.label}
       </span>
       <span
-        className="mt-1 text-[10px] text-[var(--tm-accent)]/50"
+        className="mt-1 text-[10px] text-[#4f8f7a]/50"
         style={{ fontFamily: "'JetBrains Mono', monospace" }}
       >
         {data.count} {data.count === 1 ? 'link' : 'links'}

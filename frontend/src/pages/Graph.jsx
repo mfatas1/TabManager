@@ -119,7 +119,7 @@ export default function Graph() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7f8f5] flex items-center justify-center">
-        <span className="font-mono text-xs text-[var(--tm-text-disabled)] tracking-widest uppercase animate-pulse">
+        <span className="font-mono text-xs text-[#7d8984] tracking-widest uppercase animate-pulse">
           Loading graph…
         </span>
       </div>
@@ -138,11 +138,11 @@ export default function Graph() {
     return (
       <div className="min-h-screen bg-[#f7f8f5] flex items-center justify-center">
         <div className="text-center">
-          <div className="size-14 mx-auto mb-6 rounded-lg border border-[var(--tm-border)] bg-white flex items-center justify-center">
-            <Tag className="size-6 text-[var(--tm-text-disabled)]" />
+          <div className="size-14 mx-auto mb-6 rounded-lg border border-[#d8ded8] bg-white flex items-center justify-center">
+            <Tag className="size-6 text-[#7d8984]" />
           </div>
-          <h2 className="font-display text-lg font-semibold text-[var(--tm-accent-hover)] mb-2">No links yet</h2>
-          <p className="font-mono text-xs text-[var(--tm-text-muted)] uppercase tracking-widest">Add some links to see the graph</p>
+          <h2 className="font-display text-lg font-semibold text-[#5f6c67] mb-2">No links yet</h2>
+          <p className="font-mono text-xs text-[#9aa39f] uppercase tracking-widest">Add some links to see the graph</p>
         </div>
       </div>
     );
@@ -152,18 +152,18 @@ export default function Graph() {
     <div className="bg-[#f7f8f5] flex flex-col">
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="relative border-b border-[#e8dff2] overflow-hidden">
+      <div className="relative border-b border-[#dfe5df] overflow-hidden">
         <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-6">
           <div className="flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-accent-bg-deep)] bg-white px-4 py-1.5 mb-7">
-              <Network className="size-3 text-[var(--tm-accent)]" />
-              <span className="font-mono text-[11px] tracking-[0.12em] text-[var(--tm-accent-hover)]/90 uppercase">Visual knowledge map</span>
+            <div className="inline-flex items-center gap-2.5 rounded-md border border-[#c8d8cf] bg-white px-4 py-1.5 mb-7">
+              <Network className="size-3 text-[#4f8f7a]" />
+              <span className="font-mono text-[11px] tracking-[0.12em] text-[#315f56]/90 uppercase">Visual knowledge map</span>
             </div>
 
             <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-[0.92] mb-4">
-              Knowledge <span className="text-[var(--tm-accent)]">Graph</span>
+              Knowledge <span className="text-[#4f8f7a]">Graph</span>
             </h1>
-            <p className="max-w-sm text-sm text-[var(--tm-text-secondary)] leading-relaxed mb-10">
+            <p className="max-w-sm text-sm text-[#68746f] leading-relaxed mb-10">
               Explore your saved links as an interactive network. Related content clusters by shared tags.
             </p>
 
@@ -174,8 +174,8 @@ export default function Graph() {
                   onClick={clearTagFilter}
                   className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                     !selectedTag
-                      ? 'bg-[#ede9f8] border-[#c4b5e8] text-[#1e1b2e]'
-                      : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-faint)] hover:text-[var(--tm-accent-hover)]'
+                      ? 'bg-[#e7efea] border-[#b7c6bd] text-[#26312d]'
+                      : 'bg-transparent border-[#d8ded8] text-[#68746f] hover:border-[#c3cfc7] hover:text-[#5f6c67]'
                   }`}
                 >
                   All <span className="opacity-50">{links.length}</span>
@@ -187,8 +187,8 @@ export default function Graph() {
                     onClick={() => handleTagClick(tag)}
                     className={`font-mono px-3.5 py-1.5 rounded-full text-[11px] border transition-all ${
                       selectedTag === tag
-                        ? 'bg-[var(--tm-accent-hover)] border-[var(--tm-accent-hover)] text-white'
-                        : 'bg-transparent border-[var(--tm-border)] text-[var(--tm-text-secondary)] hover:border-[var(--tm-accent-subtle)] hover:text-[var(--tm-accent-hover)]'
+                        ? 'bg-[#315f56] border-[#315f56] text-white'
+                        : 'bg-transparent border-[#d8ded8] text-[#68746f] hover:border-[#a8bfb2] hover:text-[#315f56]'
                     }`}
                   >
                     {tag} <span className="opacity-50">{count}</span>
@@ -197,7 +197,7 @@ export default function Graph() {
                 {hiddenCount > 0 && (
                   <button
                     onClick={() => setShowAllTags(v => !v)}
-                    className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[var(--tm-border)] text-[var(--tm-text-disabled)] hover:text-[var(--tm-accent-hover)] hover:border-[var(--tm-accent-faint)] transition-all"
+                    className="font-mono px-3.5 py-1.5 rounded-full text-[11px] border border-[#d8ded8] text-[#7d8984] hover:text-[#5f6c67] hover:border-[#c3cfc7] transition-all"
                   >
                     {showAllTags ? 'show less' : `+${hiddenCount} more`}
                   </button>
@@ -225,20 +225,20 @@ export default function Graph() {
           maxZoom={2}
           className="bg-[#f7f8f5]"
         >
-          <Controls className="!bg-white !border-[var(--tm-border)] !rounded-lg [&>button]:!bg-white [&>button]:!border-[var(--tm-border)] [&>button]:!text-[var(--tm-text-secondary)] [&>button:hover]:!bg-[var(--tm-accent-bg)] [&>button:hover]:!text-[var(--tm-accent-hover)]" />
+          <Controls className="!bg-white !border-[#d8ded8] !rounded-lg [&>button]:!bg-white [&>button]:!border-[#d8ded8] [&>button]:!text-[#68746f] [&>button:hover]:!bg-[#edf4ef] [&>button:hover]:!text-[#315f56]" />
           <Background variant="dots" gap={24} size={1} color="rgba(79, 143, 122, 0.16)" />
         </ReactFlow>
       </div>
 
       {/* ── Side Panel ──────────────────────────────────────────── */}
       {selectedLink && (
-        <div className="fixed top-0 right-0 w-[400px] h-full bg-[#f7f8f5] border-l border-[#e8dff2] z-50 flex flex-col shadow-sm">
+        <div className="fixed top-0 right-0 w-[400px] h-full bg-[#f7f8f5] border-l border-[#dfe5df] z-50 flex flex-col shadow-sm">
             {/* Panel header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#e8dff2]">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--tm-text-muted)] uppercase">Link Details</span>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#dfe5df]">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[#9aa39f] uppercase">Link Details</span>
               <button
                 onClick={closePanel}
-                className="p-2 rounded-lg hover:bg-[#f5f0fb] text-[var(--tm-text-disabled)] hover:text-[#1e1b2e] transition-colors"
+                className="p-2 rounded-lg hover:bg-[#f1f4f1] text-[#7d8984] hover:text-[#26312d] transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -246,20 +246,20 @@ export default function Graph() {
 
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {/* Left accent */}
-              <div className="border-l-2 border-[var(--tm-border-mid)] pl-4 mb-8">
-                <h3 className="font-display text-base font-semibold text-[#1e1b2e] leading-snug">
+              <div className="border-l-2 border-[#9cb8aa] pl-4 mb-8">
+                <h3 className="font-display text-base font-semibold text-[#26312d] leading-snug">
                   {selectedLink.title || 'Untitled'}
                 </h3>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">URL</label>
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">URL</label>
                   <a
                     href={selectedLink.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-start gap-2 font-mono text-[11px] text-[var(--tm-accent)]/80 hover:text-[var(--tm-accent-hover)] break-all transition-colors leading-relaxed"
+                    className="inline-flex items-start gap-2 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all transition-colors leading-relaxed"
                   >
                     <ExternalLink className="size-3.5 mt-0.5 flex-shrink-0" />
                     {selectedLink.url}
@@ -268,8 +268,8 @@ export default function Graph() {
 
                 {selectedLink.summary && (
                   <div>
-                    <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Summary</label>
-                    <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed">{selectedLink.summary}</p>
+                    <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Summary</label>
+                    <p className="text-sm text-[#68746f] leading-relaxed">{selectedLink.summary}</p>
                   </div>
                 )}
 
@@ -282,14 +282,14 @@ export default function Graph() {
                     : [];
                   return specificTags.length > 0 && (
                     <div>
-                      <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Keywords</label>
+                      <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Keywords</label>
                       <div className="flex flex-wrap gap-1.5">
                         {specificTags.map((tag) => {
                           const tagObj = typeof tag === 'string' ? { name: tag, id: tag } : tag;
                           return (
                             <span
                               key={tagObj.id || tagObj.name}
-                              className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[var(--tm-accent-bg)] text-[var(--tm-accent)]/80 border border-[var(--tm-accent-bg-deep)]"
+                              className="font-mono px-2.5 py-0.5 rounded-full text-[10px] bg-[#edf4ef] text-[#4f8f7a]/80 border border-[#c8d8cf]"
                             >
                               {tagObj.name}
                             </span>
@@ -301,8 +301,8 @@ export default function Graph() {
                 })()}
 
                 <div>
-                  <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Saved</label>
-                  <div className="flex items-center gap-2 font-mono text-xs text-[var(--tm-text-disabled)]">
+                  <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Saved</label>
+                  <div className="flex items-center gap-2 font-mono text-xs text-[#7d8984]">
                     <Calendar className="size-3.5" />
                     {new Date(selectedLink.date_saved).toLocaleString()}
                   </div>
@@ -310,7 +310,7 @@ export default function Graph() {
 
                 {projects.length > 0 && (
                   <div>
-                    <label className="font-mono text-[10px] tracking-[0.15em] text-[var(--tm-text-muted)] uppercase block mb-2">Add to project</label>
+                    <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Add to project</label>
                     <div className="flex gap-2">
                       <ProjectDropdown
                         projects={projects}
@@ -324,25 +324,25 @@ export default function Graph() {
                         type="button"
                         onClick={handleAddToProject}
                         disabled={!selectedProjectId}
-                        className="px-4 py-2.5 text-sm font-semibold bg-[var(--tm-accent-hover)] text-white rounded-lg hover:bg-[var(--tm-accent-press)] disabled:bg-[var(--tm-border)] disabled:text-[var(--tm-text-disabled)] disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2.5 text-sm font-semibold bg-[#315f56] text-white rounded-lg hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                       >
                         Add
                       </button>
                     </div>
                     {projectMessage && (
-                      <p className="mt-2 font-mono text-[11px] text-[var(--tm-text-secondary)]">{projectMessage}</p>
+                      <p className="mt-2 font-mono text-[11px] text-[#68746f]">{projectMessage}</p>
                     )}
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="px-6 py-5 border-t border-[#e8dff2]">
+            <div className="px-6 py-5 border-t border-[#dfe5df]">
               <a
                 href={selectedLink.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[var(--tm-accent-hover)] hover:bg-[var(--tm-accent-press)] text-white text-sm font-semibold rounded-md transition-colors"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#315f56] hover:bg-[#244b44] text-white text-sm font-semibold rounded-md transition-colors"
               >
                 <ExternalLink className="size-4" />
                 Open Link

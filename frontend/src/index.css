@@ -34,55 +34,26 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* ─── TabManager brand palette ────────────────────────────── */
-  /* Accent shades */
-  --tm-accent:          #8b6bbf;   /* main lilac */
-  --tm-accent-hover:    #7a59ae;   /* darker on hover */
-  --tm-accent-press:    #6a4a9d;   /* pressed / button hover */
-  --tm-accent-dark:     #7a59ae;   /* alias */
-  --tm-accent-muted:    #a990d4;   /* muted icons / borders */
-  --tm-accent-subtle:   #b09fd4;   /* very subtle accents */
-  --tm-accent-faint:    #cec4e4;   /* faint hover borders */
+  /* ─── TabManager brand tokens ─────────────────────────────── */
+  --background: #f7f8f5;
+  --foreground: #26312d;
+  --surface: #ffffff;
+  --accent: #4f8f7a;
+  --accent-hover: #3d7464;
+  --text-primary: #26312d;
+  --text-secondary: #68746f;
+  --border: rgba(56, 74, 68, 0.14);
+  --card: #ffffff;
+  --card-foreground: #26312d;
+  --muted-foreground: #68746f;
 
-  /* Accent backgrounds */
-  --tm-accent-bg:       #f5f0fb;   /* light tinted bg (tags, badges) */
-  --tm-accent-bg-mid:   #ede9f8;   /* active/selected state bg */
-  --tm-accent-bg-deep:  #e4d8f0;   /* deeper tinted bg */
-  --tm-accent-selected: #ede9f8;   /* selected nav/button bg */
-  --tm-accent-border-selected: #c4b5e8; /* border of selected items */
-
-  /* Borders */
-  --tm-border:          #e2daf0;   /* default border */
-  --tm-border-mid:      #d4c7e8;   /* slightly stronger border */
-
-  /* Surfaces */
-  --tm-background:      #f7f8f5;
-  --tm-surface:         #ffffff;
-  --tm-surface-tinted:  #f9f6fd;   /* very faintly tinted white */
-
-  /* Text */
-  --tm-text-primary:    #1e1b2e;
-  --tm-text-secondary:  #6b6080;
-  --tm-text-muted:      #9990b0;
-  --tm-text-faint:      #b0a8c8;
-  --tm-text-disabled:   #8a7fa0;
-
-  /* Status dots (non-accent) */
-  --tm-status-neutral:  #cdc0e4;
-
-  /* Aliases used by shadcn tokens */
-  --background:         var(--tm-background);
-  --foreground:         var(--tm-text-primary);
-  --surface:            var(--tm-surface);
-  --accent:             var(--tm-accent);
-  --accent-hover:       var(--tm-accent-hover);
-  --text-primary:       var(--tm-text-primary);
-  --text-secondary:     var(--tm-text-secondary);
-  --border:             var(--tm-border);
-  --card:               var(--tm-surface);
-  --card-foreground:    var(--tm-text-primary);
-  --muted-foreground:   var(--tm-text-secondary);
-  --ring:               var(--tm-accent-muted);
+  --tm-background: #f7f8f5;
+  --tm-surface: #ffffff;
+  --tm-accent: #4f8f7a;
+  --tm-accent-hover: #3d7464;
+  --tm-text-primary: #26312d;
+  --tm-text-secondary: #68746f;
+  --tm-border: rgba(56, 74, 68, 0.14);
 }
 
 .dark {

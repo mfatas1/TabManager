@@ -8,24 +8,24 @@ export default function LandingPage() {
   const primaryLabel = isAuthenticated ? 'Get started' : 'Sign in';
 
   return (
-    <div className="min-h-screen bg-[#f7f8f5] text-[#1e1b2e] flex flex-col">
+    <div className="min-h-screen bg-[#f7f8f5] text-[#26312d] flex flex-col">
 
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 pt-32 pb-24 text-center">
 
-        <div className="inline-flex items-center gap-2.5 rounded-md border border-[var(--tm-border)] bg-white px-4 py-1.5 mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--tm-accent)] flex-shrink-0" />
-          <span className="font-mono text-[11px] tracking-[0.12em] text-[var(--tm-text-secondary)] uppercase">
+        <div className="inline-flex items-center gap-2.5 rounded-md border border-[#d8ded8] bg-white px-4 py-1.5 mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#4f8f7a] flex-shrink-0" />
+          <span className="font-mono text-[11px] tracking-[0.12em] text-[#68746f] uppercase">
             Personal research tool
           </span>
         </div>
 
         <h1 className="font-display max-w-2xl text-5xl md:text-7xl font-bold tracking-tight leading-[0.96] mb-7">
           Save what you read.{' '}
-          <span className="text-[var(--tm-accent)]">See how it connects.</span>
+          <span className="text-[#4f8f7a]">See how it connects.</span>
         </h1>
 
-        <p className="max-w-sm text-base text-[var(--tm-text-secondary)] mb-10 leading-relaxed">
+        <p className="max-w-sm text-base text-[#68746f] mb-10 leading-relaxed">
           Paste a URL and Folio pulls the title, summary, and key topics automatically.
           Over time, a picture of how your reading fits together starts to form.
         </p>
@@ -33,7 +33,7 @@ export default function LandingPage() {
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             to={primaryPath}
-            className="inline-flex items-center gap-2 rounded-md bg-[var(--tm-accent-hover)] px-7 py-3.5 text-sm font-semibold text-white hover:bg-[var(--tm-accent-press)] transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-[#315f56] px-7 py-3.5 text-sm font-semibold text-white hover:bg-[#244b44] transition-colors"
           >
             {loading ? 'Loading...' : primaryLabel}
             <ArrowRight className="size-4" />
@@ -41,7 +41,7 @@ export default function LandingPage() {
           {isAuthenticated && (
             <Link
               to="/graph"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--tm-border-mid)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--tm-accent-hover)] hover:border-[#b09fd4] transition-colors"
+              className="inline-flex items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-7 py-3.5 text-sm font-semibold text-[#315f56] hover:border-[#9fb4aa] transition-colors"
             >
               View graph
               <Network className="size-4" />
@@ -51,13 +51,13 @@ export default function LandingPage() {
       </main>
 
       {/* How it works */}
-      <section className="border-t border-[#e8dff2] bg-white px-6 py-20">
+      <section className="border-t border-[#dfe5df] bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl">
 
           <div className="flex items-center gap-5 mb-14">
-            <div className="h-px flex-1 bg-[#e8dff2]" />
-            <span className="font-mono text-[11px] tracking-[0.16em] text-[var(--tm-text-disabled)] uppercase">How it works</span>
-            <div className="h-px flex-1 bg-[#e8dff2]" />
+            <div className="h-px flex-1 bg-[#dfe5df]" />
+            <span className="font-mono text-[11px] tracking-[0.16em] text-[#7d8984] uppercase">How it works</span>
+            <div className="h-px flex-1 bg-[#dfe5df]" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -81,33 +81,33 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="border-t border-[#e8dff2] bg-[#f7f8f5] px-6 py-20">
+      <section className="border-t border-[#dfe5df] bg-[#f7f8f5] px-6 py-20">
         <div className="mx-auto max-w-4xl">
 
           <div className="flex items-center gap-5 mb-14">
-            <div className="h-px flex-1 bg-[#e8dff2]" />
-            <span className="font-mono text-[11px] tracking-[0.16em] text-[var(--tm-text-disabled)] uppercase">What's included</span>
-            <div className="h-px flex-1 bg-[#e8dff2]" />
+            <div className="h-px flex-1 bg-[#dfe5df]" />
+            <span className="font-mono text-[11px] tracking-[0.16em] text-[#7d8984] uppercase">What's included</span>
+            <div className="h-px flex-1 bg-[#dfe5df]" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-[#e8dff2] bg-[#e8dff2] rounded-lg overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-[#dfe5df] bg-[#dfe5df] rounded-lg overflow-hidden">
             <FeatureCard
-              icon={<BookOpen className="size-4 text-[var(--tm-accent)]" />}
+              icon={<BookOpen className="size-4 text-[#4f8f7a]" />}
               title="Library"
               description="Every link you save lives here. Search, filter by topic, sort by date or name, and edit the title or summary if the AI got it wrong."
             />
             <FeatureCard
-              icon={<Network className="size-4 text-[var(--tm-accent)]" />}
+              icon={<Network className="size-4 text-[#4f8f7a]" />}
               title="Knowledge graph"
               description="A visual map of your reading. Topics become hubs, and links cluster around the subjects they cover. Filter to any topic to focus in."
             />
             <FeatureCard
-              icon={<FolderKanban className="size-4 text-[var(--tm-accent)]" />}
+              icon={<FolderKanban className="size-4 text-[#4f8f7a]" />}
               title="Projects"
               description="When you're researching something specific, group relevant links into a project. Track reading status per link and attach tasks to keep things moving."
             />
             <FeatureCard
-              icon={<Tag className="size-4 text-[var(--tm-accent)]" />}
+              icon={<Tag className="size-4 text-[#4f8f7a]" />}
               title="Tag editing"
               description="The AI assigns topic tags automatically. They're mostly right, but you can remove ones that don't fit, add your own, and reuse tags across links."
             />
@@ -115,8 +115,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-[#e8dff2] bg-white py-8 text-center">
-        <span className="font-mono text-[11px] tracking-[0.16em] text-[var(--tm-text-faint)] uppercase">
+      <footer className="border-t border-[#dfe5df] bg-white py-8 text-center">
+        <span className="font-mono text-[11px] tracking-[0.16em] text-[#b0bab5] uppercase">
           Folio
         </span>
       </footer>
@@ -128,9 +128,9 @@ export default function LandingPage() {
 function Step({ number, title, description }) {
   return (
     <div className="flex flex-col gap-4">
-      <span className="font-mono text-[11px] tracking-[0.2em] text-[var(--tm-text-muted)]">{number}</span>
-      <h3 className="font-display text-lg font-semibold text-[#1e1b2e] leading-snug">{title}</h3>
-      <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed">{description}</p>
+      <span className="font-mono text-[11px] tracking-[0.2em] text-[#9aa39f]">{number}</span>
+      <h3 className="font-display text-lg font-semibold text-[#26312d] leading-snug">{title}</h3>
+      <p className="text-sm text-[#68746f] leading-relaxed">{description}</p>
     </div>
   );
 }
@@ -138,11 +138,11 @@ function Step({ number, title, description }) {
 function FeatureCard({ icon, title, description }) {
   return (
     <div className="p-7 bg-white">
-      <div className="mb-5 size-9 rounded-md bg-[var(--tm-accent-bg)] border border-[var(--tm-border)] flex items-center justify-center">
+      <div className="mb-5 size-9 rounded-md bg-[#edf4ef] border border-[#d8ded8] flex items-center justify-center">
         {icon}
       </div>
-      <h3 className="font-display text-sm font-semibold text-[#1e1b2e] mb-2">{title}</h3>
-      <p className="text-sm text-[var(--tm-text-secondary)] leading-relaxed">{description}</p>
+      <h3 className="font-display text-sm font-semibold text-[#26312d] mb-2">{title}</h3>
+      <p className="text-sm text-[#68746f] leading-relaxed">{description}</p>
     </div>
   );
 }
