@@ -770,16 +770,25 @@ function LinkList() {
 
             <div className="space-y-6">
               <div>
-                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">URL</label>
-                <a
-                  href={selectedLink.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-start gap-2 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all transition-colors leading-relaxed"
-                >
-                  <ExternalLink className="size-3.5 mt-0.5 flex-shrink-0" />
-                  {selectedLink.url}
-                </a>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">
+                  {selectedLink.source_type === 'file' ? 'File' : 'URL'}
+                </label>
+                {selectedLink.source_type === 'file' ? (
+                  <span className="inline-flex items-start gap-2 font-mono text-[11px] text-[#4f8f7a]/80 break-all leading-relaxed">
+                    <FileText className="size-3.5 mt-0.5 flex-shrink-0" />
+                    {selectedLink.file_name}
+                  </span>
+                ) : (
+                  <a
+                    href={selectedLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-start gap-2 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all transition-colors leading-relaxed"
+                  >
+                    <ExternalLink className="size-3.5 mt-0.5 flex-shrink-0" />
+                    {selectedLink.url}
+                  </a>
+                )}
               </div>
 
               {selectedLink.summary && (
@@ -881,17 +890,19 @@ function LinkList() {
             </div>
           </div>
 
-          <div className="px-6 py-5 border-t border-[#dfe5df]">
-            <a
-              href={selectedLink.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#315f56] hover:bg-[#244b44] text-white text-sm font-semibold rounded-md transition-colors"
-            >
-              <ExternalLink className="size-4" />
-              Open Link
-            </a>
-          </div>
+          {selectedLink.source_type !== 'file' && (
+            <div className="px-6 py-5 border-t border-[#dfe5df]">
+              <a
+                href={selectedLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#315f56] hover:bg-[#244b44] text-white text-sm font-semibold rounded-md transition-colors"
+              >
+                <ExternalLink className="size-4" />
+                Open Link
+              </a>
+            </div>
+          )}
         </div>
       )}
 
