@@ -6,7 +6,8 @@ import { addLinkToProject, getProjects } from '../api/projects';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ProjectDropdown from '../components/ProjectDropdown';
 import TagEditor from '../components/TagEditor';
-import { Plus, X, ExternalLink, Trash2, BookOpen, Calendar, Search, Pencil, FolderOpen } from 'lucide-react';
+import { Plus, X, ExternalLink, Trash2, BookOpen, Calendar, Search, Pencil, FolderOpen, Upload, FileText } from 'lucide-react';
+import { uploadFile } from '../api/links';
 
 function LinkList() {
   const { links, loading, error, refetch } = useLinks();
@@ -22,6 +23,10 @@ function LinkList() {
   const [allTags, setAllTags] = useState([]);
   const [pendingDeleteLink, setPendingDeleteLink] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef(null);
 
   const selectedTag = searchParams.get('tag');
   const highlightedLinkId = searchParams.get('highlight');
@@ -210,6 +215,25 @@ function LinkList() {
     }
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      setUploading(true);
+      setUploadError(null);
+      setUploadSuccess(false);
+      await uploadFile(file);
+      setUploadSuccess(true);
+      await refetch();
+      setTimeout(() => setUploadSuccess(false), 2000);
+    } catch (err) {
+      setUploadError(friendlyError(err, 'Failed to upload file. Please try again.'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const requestDelete = (link, e) => {
     e?.preventDefault();
     e?.stopPropagation();
@@ -317,7 +341,7 @@ function LinkList() {
               Save any URL and let AI automatically extract titles, summaries, and semantic tags.
             </p>
 
-            {/* Input */}
+            {/* URL Input */}
             <form onSubmit={handleSubmit} className="w-full max-w-lg">
               <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
                 <input
@@ -325,30 +349,51 @@ function LinkList() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
-                  disabled={submitting}
+                  disabled={submitting || uploading}
                   className="flex-1 px-4 py-3 font-mono text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] placeholder:text-[#9aa39f] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/30 disabled:opacity-50 transition-all"
                 />
                 <button
                   type="submit"
-                  disabled={submitting || !url.trim()}
+                  disabled={submitting || uploading || !url.trim()}
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-all"
                 >
                   <Plus className="size-4" />
                   {submitting ? 'Saving…' : 'Save'}
                 </button>
               </div>
-
               {submitSuccess && (
-                <p className="mt-3 font-mono text-[11px] text-emerald-400 tracking-wide text-center">
-                  ✓ LINK SAVED
-                </p>
+                <p className="mt-3 font-mono text-[11px] text-[#4f8f7a] tracking-wide text-center">✓ LINK SAVED</p>
               )}
               {submitError && (
-                <p className="mt-3 font-mono text-[11px] text-red-400 text-center">
-                  {submitError}
-                </p>
+                <p className="mt-3 font-mono text-[11px] text-red-400 text-center">{submitError}</p>
               )}
             </form>
+
+            {/* File Upload */}
+            <div className="w-full max-w-lg mt-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,.md,.docx"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || submitting}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-dashed border-[#9cb8aa] text-[#68746f] rounded-md hover:border-[#4f8f7a] hover:text-[#4f8f7a] hover:bg-[#edf4ef] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <Upload className="size-4" />
+                {uploading ? 'Uploading…' : 'Upload a file (PDF, DOCX, TXT, MD)'}
+              </button>
+              {uploadSuccess && (
+                <p className="mt-2 font-mono text-[11px] text-[#4f8f7a] tracking-wide text-center">✓ FILE SAVED</p>
+              )}
+              {uploadError && (
+                <p className="mt-2 font-mono text-[11px] text-red-400 text-center">{uploadError}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -537,17 +582,24 @@ function LinkList() {
                       </div>
                     </div>
 
-                    {/* URL */}
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/60 hover:text-[#315f56] truncate transition-colors"
-                    >
-                      <ExternalLink className="size-2.5 flex-shrink-0" />
-                      <span className="truncate">{link.url}</span>
-                    </a>
+                    {/* URL / File indicator */}
+                    {link.source_type === 'file' ? (
+                      <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/60 truncate">
+                        <FileText className="size-2.5 flex-shrink-0" />
+                        <span className="truncate">{link.file_name}</span>
+                      </span>
+                    ) : (
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/60 hover:text-[#315f56] truncate transition-colors"
+                      >
+                        <ExternalLink className="size-2.5 flex-shrink-0" />
+                        <span className="truncate">{link.url}</span>
+                      </a>
+                    )}
 
                     {/* Summary */}
                     {link.summary && (

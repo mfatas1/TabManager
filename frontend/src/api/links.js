@@ -28,3 +28,15 @@ export const deleteLink = (linkId) => apiClient.delete(`/links/${linkId}`);
  * @param {{ title?: string, summary?: string }} data
  */
 export const updateLink = (linkId, data) => apiClient.patch(`/links/${linkId}`, data);
+
+/**
+ * Upload a file (PDF, DOCX, TXT, MD) for text extraction and analysis
+ * @param {File} file - The file to upload
+ */
+export const uploadFile = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiClient.post('/files', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};

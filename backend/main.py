@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File as FastAPIFile
+import io
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional, Tuple
@@ -164,6 +165,8 @@ try:
             "CREATE UNIQUE INDEX IF NOT EXISTS uq_tag_user_name_type "
             "ON tags (user_id, name, tag_type) WHERE user_id IS NOT NULL"
         ))
+        ensure_column(conn, "links", "source_type", "VARCHAR DEFAULT 'url'")
+        ensure_column(conn, "links", "file_name", "VARCHAR")
         conn.commit()
         logger.info("✓ Auth ownership columns are ready")
 except Exception as e:
@@ -443,6 +446,49 @@ def scrape_url(
         # If scraping fails for any reason, log it and return None
         logger.error(f"  ⚠ Scraping failed: {e}")
         return (None, None, [], [])
+
+
+SUPPORTED_FILE_TYPES = {
+    "application/pdf": "pdf",
+    "text/plain": "txt",
+    "text/markdown": "md",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+}
+MAX_FILE_BYTES = 20 * 1024 * 1024  # 20 MB
+
+
+def extract_text_from_file(content: bytes, mime_type: str, filename: str) -> str:
+    """Extract plain text from uploaded file content."""
+    ext = SUPPORTED_FILE_TYPES.get(mime_type) or filename.rsplit(".", 1)[-1].lower()
+
+    if ext == "pdf":
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(io.BytesIO(content))
+            pages = [page.extract_text() or "" for page in reader.pages]
+            return " ".join(pages)[:MAX_PAGE_TEXT_CHARS]
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Could not read PDF: {e}")
+
+    if ext in ("txt", "md"):
+        try:
+            return content.decode("utf-8", errors="replace")[:MAX_PAGE_TEXT_CHARS]
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Could not read file: {e}")
+
+    if ext == "docx":
+        try:
+            import docx
+            doc = docx.Document(io.BytesIO(content))
+            text = " ".join(p.text for p in doc.paragraphs if p.text.strip())
+            return text[:MAX_PAGE_TEXT_CHARS]
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Could not read DOCX: {e}")
+
+    raise HTTPException(
+        status_code=415,
+        detail=f"Unsupported file type '{ext}'. Supported: PDF, TXT, MD, DOCX.",
+    )
 
 
 def user_owned_filter(model, user_id: str):
@@ -1011,6 +1057,64 @@ def delete_task(
     db.delete(db_task)
     db.commit()
     return None
+
+
+@app.post("/files", response_model=LinkResponse, status_code=201)
+async def upload_file(
+    file: UploadFile = FastAPIFile(...),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Upload a file (PDF, TXT, MD, DOCX), extract text, and analyse it
+    with the same LLM pipeline used for URLs.
+    """
+    if file.size and file.size > MAX_FILE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
+
+    content = await file.read()
+    if len(content) > MAX_FILE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
+
+    mime_type = file.content_type or ""
+    filename = file.filename or "upload"
+
+    page_text = extract_text_from_file(content, mime_type, filename)
+    if not page_text.strip():
+        raise HTTPException(status_code=422, detail="Could not extract any text from the file.")
+
+    # Use filename as a stable pseudo-URL so the item is unique per user
+    pseudo_url = f"file://{current_user.id}/{filename}"
+
+    existing = db.query(Link).filter(
+        Link.url == pseudo_url,
+        Link.user_id == current_user.id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="A file with this name already exists in your library.")
+
+    existing_topics = get_existing_broad_topics(db, current_user.id)
+    summary, specific_tags, broad_tags = analyze_page_with_llm(
+        url=pseudo_url,
+        title=filename,
+        meta_description=None,
+        page_text=page_text,
+        existing_topics=existing_topics,
+    )
+
+    db_link = Link(
+        url=pseudo_url,
+        user_id=current_user.id,
+        title=filename,
+        source_type="file",
+        file_name=filename,
+    )
+    db.add(db_link)
+    db.flush()
+    apply_link_analysis(db, db_link, filename, summary, specific_tags, broad_tags)
+    db.commit()
+    db.refresh(db_link)
+    return db_link
 
 
 @app.post("/links/{link_id}/reprocess", response_model=LinkResponse)
