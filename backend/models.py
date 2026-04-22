@@ -34,6 +34,7 @@ class Link(Base):
     date_saved = Column(DateTime, default=datetime.utcnow, nullable=False)
     source_type = Column(String, nullable=False, default='url')  # 'url' or 'file'
     file_name = Column(String, nullable=True)
+    file_url = Column(String, nullable=True)
     
     # This creates the many-to-many relationship with tags
     # through the link_tags join table

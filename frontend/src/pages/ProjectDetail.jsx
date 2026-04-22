@@ -449,10 +449,22 @@ export default function ProjectDetail() {
                       <div>
                         <h3 className="font-display text-sm font-semibold leading-snug mb-2">{link.title || 'Untitled'}</h3>
                         {link.source_type === 'file' ? (
-                          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 break-all">
-                            <FileText className="size-3 flex-shrink-0" />
-                            {link.file_name}
-                          </span>
+                          link.file_url ? (
+                            <a
+                              href={link.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all"
+                            >
+                              <FileText className="size-3 flex-shrink-0" />
+                              {link.file_name}
+                            </a>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 break-all">
+                              <FileText className="size-3 flex-shrink-0" />
+                              {link.file_name}
+                            </span>
+                          )
                         ) : (
                           <a
                             href={link.url}

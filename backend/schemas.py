@@ -66,6 +66,7 @@ class LinkResponse(BaseModel):
     date_saved: datetime
     source_type: str = 'url'
     file_name: Optional[str] = None
+    file_url: Optional[str] = None
     tags: List[TagResponse] = []
     projects: List[ProjectMiniResponse] = []
 

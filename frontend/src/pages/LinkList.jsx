@@ -890,16 +890,16 @@ function LinkList() {
             </div>
           </div>
 
-          {selectedLink.source_type !== 'file' && (
+          {(selectedLink.source_type !== 'file' || selectedLink.file_url) && (
             <div className="px-6 py-5 border-t border-[#dfe5df]">
               <a
-                href={selectedLink.url}
+                href={selectedLink.source_type === 'file' ? selectedLink.file_url : selectedLink.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#315f56] hover:bg-[#244b44] text-white text-sm font-semibold rounded-md transition-colors"
               >
-                <ExternalLink className="size-4" />
-                Open Link
+                {selectedLink.source_type === 'file' ? <FileText className="size-4" /> : <ExternalLink className="size-4" />}
+                {selectedLink.source_type === 'file' ? 'Open File' : 'Open Link'}
               </a>
             </div>
           )}

@@ -11,6 +11,7 @@ import logging
 import re
 from dotenv import load_dotenv
 from openai import OpenAI
+from supabase import create_client, Client as SupabaseClient
 from backend.auth import CurrentUser, get_current_user
 from backend.database import engine, Base, get_db
 from backend.models import Link, Project, ProjectLink, Tag, Task
@@ -43,6 +44,46 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-nano")
 openai_client = None
 
 MAX_PAGE_TEXT_CHARS = 8000
+
+# Supabase storage
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+STORAGE_BUCKET = "user-files"
+_supabase_client: Optional[SupabaseClient] = None
+
+
+def get_supabase_storage() -> Optional[SupabaseClient]:
+    global _supabase_client
+    if _supabase_client is None and SUPABASE_URL and SUPABASE_SERVICE_KEY:
+        try:
+            _supabase_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+        except Exception as e:
+            logger.warning(f"Could not initialise Supabase client: {e}")
+    return _supabase_client
+
+
+def upload_file_to_storage(content: bytes, user_id: str, filename: str, mime_type: str) -> Optional[str]:
+    """
+    Upload file bytes to Supabase Storage and return the public URL.
+    Returns None if storage is not configured or upload fails.
+    """
+    sb = get_supabase_storage()
+    if not sb:
+        logger.warning("Supabase storage not configured — file will not be stored.")
+        return None
+    try:
+        path = f"{user_id}/{filename}"
+        sb.storage.from_(STORAGE_BUCKET).upload(
+            path,
+            content,
+            {"content-type": mime_type or "application/octet-stream", "upsert": "true"},
+        )
+        public_url = sb.storage.from_(STORAGE_BUCKET).get_public_url(path)
+        logger.info(f"  ✓ Uploaded to storage: {public_url}")
+        return public_url
+    except Exception as e:
+        logger.error(f"  ⚠ Storage upload failed: {e}")
+        return None
 
 def get_openai_client():
     """Lazy initialization of OpenAI client to avoid startup errors."""
@@ -167,6 +208,7 @@ try:
         ))
         ensure_column(conn, "links", "source_type", "VARCHAR DEFAULT 'url'")
         ensure_column(conn, "links", "file_name", "VARCHAR")
+        ensure_column(conn, "links", "file_url", "VARCHAR")
         conn.commit()
         logger.info("✓ Auth ownership columns are ready")
 except Exception as e:
@@ -1052,8 +1094,12 @@ async def add_file_to_project(
     if file.size and file.size > MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
     content = await file.read()
+    mime_type = file.content_type or ""
     filename = file.filename or "upload"
     pseudo_url = f"file://{current_user.id}/{filename}"
+
+    # Upload to Supabase Storage so user can open the file later
+    file_url = upload_file_to_storage(content, current_user.id, filename, mime_type)
 
     existing_link = db.query(Link).filter(
         Link.url == pseudo_url,
@@ -1062,14 +1108,15 @@ async def add_file_to_project(
 
     if existing_link:
         db_link = existing_link
+        if file_url and not db_link.file_url:
+            db_link.file_url = file_url
     else:
         db_link = Link(url=pseudo_url, user_id=current_user.id, title=filename,
-                       source_type="file", file_name=filename)
+                       source_type="file", file_name=filename, file_url=file_url)
         db.add(db_link)
         db.flush()
 
         if not skip_analysis:
-            mime_type = file.content_type or ""
             page_text = extract_text_from_file(content, mime_type, filename)
             if page_text.strip():
                 existing_topics = get_existing_broad_topics(db, current_user.id)
@@ -1264,12 +1311,16 @@ async def upload_file(
     if existing:
         raise HTTPException(status_code=400, detail="A file with this name already exists in your library.")
 
+    # Upload to Supabase Storage so the file can be opened later
+    file_url = upload_file_to_storage(content, current_user.id, filename, mime_type)
+
     db_link = Link(
         url=pseudo_url,
         user_id=current_user.id,
         title=filename,
         source_type="file",
         file_name=filename,
+        file_url=file_url,
     )
     db.add(db_link)
 
