@@ -403,49 +403,120 @@ Extracted page content:
         return (fallback_summary(title, meta_description, page_text), [], [])
 
 
+SCRAPE_HEADERS = {
+    'User-Agent': (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/124.0.0.0 Safari/537.36'
+    ),
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+}
+
+
+def _scrape_direct(url: str):
+    """
+    Try a direct HTTP fetch. Returns (title, meta_description, page_text) or raises.
+    """
+    response = requests.get(url, timeout=12, headers=SCRAPE_HEADERS)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    title_tag = soup.find('title')
+    title = title_tag.get_text(strip=True) if title_tag else None
+
+    # Prefer og:title over <title> — usually cleaner
+    og_title = soup.find('meta', property='og:title')
+    if og_title and og_title.get('content'):
+        title = og_title['content'].strip()
+
+    meta_desc = soup.find('meta', attrs={'name': 'description'})
+    og_desc = soup.find('meta', property='og:description')
+    meta_description = (
+        (og_desc.get('content') if og_desc else None)
+        or (meta_desc.get('content') if meta_desc else None)
+    )
+
+    page_text = extract_page_text(soup)
+    return title, meta_description, page_text
+
+
+def _scrape_jina(url: str):
+    """
+    Fall back to Jina Reader (r.jina.ai) which handles JS-rendered pages and bot-blocked sites.
+    Returns (title, meta_description, page_text) or raises.
+    """
+    jina_url = f"https://r.jina.ai/{url}"
+    logger.info(f"  ↩ Falling back to Jina Reader: {jina_url}")
+    response = requests.get(jina_url, timeout=20, headers={
+        **SCRAPE_HEADERS,
+        'Accept': 'text/plain',
+    })
+    response.raise_for_status()
+    text = response.text.strip()
+
+    # Jina returns markdown-ish text; first non-empty line is usually the title
+    lines = [l for l in text.splitlines() if l.strip()]
+    title = None
+    if lines:
+        first = lines[0].lstrip('# ').strip()
+        if 10 < len(first) < 200:
+            title = first
+
+    # Use up to 6000 chars of body text
+    page_text = text[:6000]
+    return title, None, page_text
+
+
 def scrape_url(
     url: str,
     existing_topics: Optional[List[str]] = None,
 ) -> Tuple[Optional[str], Optional[str], List[str], List[str]]:
     """
     Scrape a URL and extract the title, model-written summary, and two-level tags using LLM.
-    Returns (title, summary, specific_tags, broad_tags) tuple. 
-    Returns (None, None, [], []) if scraping fails.
+    Tries a direct fetch first; if that yields no usable content, falls back to Jina Reader.
+    Returns (title, summary, specific_tags, broad_tags) tuple.
+    Returns (None, None, [], []) if all scraping fails.
     """
+    title = meta_description = page_text = None
+
+    # --- attempt 1: direct fetch ---
     try:
         logger.info(f"🔍 Scraping URL: {url}")
-        response = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        
-        # Get title
-        title_tag = soup.find('title')
-        title = title_tag.get_text(strip=True) if title_tag else None
+        title, meta_description, page_text = _scrape_direct(url)
         logger.info(f"  ✓ Title: {title}")
-        
-        # Get meta description
-        meta_desc = soup.find('meta', attrs={'name': 'description'})
-        meta_description = meta_desc.get('content') if meta_desc else None
-        logger.info(f"  ✓ Meta description: {meta_description}")
-        
-        page_text = extract_page_text(soup)
-        logger.info(f"  ✓ Extracted {len(page_text)} characters of page text")
-        
-        # Generate model-written summary and two-level tags using LLM
-        summary, specific_tags, broad_tags = analyze_page_with_llm(
-            url=url,
-            title=title,
-            meta_description=meta_description,
-            page_text=page_text,
-            existing_topics=existing_topics,
-        )
-        
-        return (title, summary, specific_tags, broad_tags)
+        logger.info(f"  ✓ Meta: {meta_description}")
+        logger.info(f"  ✓ Extracted {len(page_text or '')} chars")
     except Exception as e:
-        # If scraping fails for any reason, log it and return None
-        logger.error(f"  ⚠ Scraping failed: {e}")
+        logger.warning(f"  ⚠ Direct scrape failed: {e}")
+
+    # --- attempt 2: Jina Reader if we got nothing useful ---
+    content_too_thin = not page_text or len(page_text.strip()) < 200
+    if content_too_thin:
+        try:
+            j_title, j_meta, j_text = _scrape_jina(url)
+            title = title or j_title
+            meta_description = meta_description or j_meta
+            page_text = j_text
+            logger.info(f"  ✓ Jina title: {title}")
+            logger.info(f"  ✓ Jina text: {len(page_text or '')} chars")
+        except Exception as e:
+            logger.error(f"  ⚠ Jina fallback failed: {e}")
+
+    if not page_text or len(page_text.strip()) < 50:
+        logger.error("  ⚠ No usable content retrieved — giving up")
         return (None, None, [], [])
+
+    # --- LLM analysis ---
+    summary, specific_tags, broad_tags = analyze_page_with_llm(
+        url=url,
+        title=title,
+        meta_description=meta_description,
+        page_text=page_text,
+        existing_topics=existing_topics,
+    )
+
+    return (title, summary, specific_tags, broad_tags)
 
 
 SUPPORTED_FILE_TYPES = {
