@@ -167,22 +167,44 @@ function LinkList() {
     }
   }, [highlightedLinkId, filteredLinks, searchParams, setSearchParams]);
 
+  const friendlyError = (err, fallback = 'Something went wrong. Please try again.') => {
+    if (!err.response && (err.code === 'ECONNABORTED' || err.message?.includes('timeout')))
+      return 'Request timed out — the backend may still be waking up. Try again in a moment.';
+    if (!err.response && err.message?.toLowerCase().includes('network'))
+      return 'Could not reach the server. Check your connection or wait for the backend to wake up.';
+    const detail = err.response?.data?.detail || '';
+    if (err.response?.status === 400 && detail.toLowerCase().includes('already exists'))
+      return 'This URL is already in your library.';
+    if (err.response?.status === 400)
+      return 'Invalid URL — make sure it starts with https:// and points to a real page.';
+    if (err.response?.status === 401)
+      return 'Session expired. Please sign out and sign back in.';
+    if (err.response?.status >= 500)
+      return 'The server ran into an error. The link may have been saved without a summary — try reprocessing it.';
+    return detail || fallback;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!url.trim()) return;
+
+    const trimmed = url.trim();
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      setSubmitError('Please enter a full URL starting with https://');
+      return;
+    }
+
     try {
       setSubmitting(true);
       setSubmitError(null);
       setSubmitSuccess(false);
-      await saveLink(url.trim());
+      await saveLink(trimmed);
       setUrl('');
       setSubmitSuccess(true);
       await refetch();
       setTimeout(() => setSubmitSuccess(false), 2000);
     } catch (err) {
-      setSubmitError(
-        err.response?.data?.detail || err.message || 'Failed to save link. Please try again.'
-      );
+      setSubmitError(friendlyError(err, 'Failed to save link. Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -205,7 +227,7 @@ function LinkList() {
       setPendingDeleteLink(null);
       await refetch();
     } catch (err) {
-      setActionError(err.response?.data?.detail || err.message || 'Failed to delete link');
+      setActionError(friendlyError(err, 'Failed to delete link'));
       setPendingDeleteLink(null);
     }
   };
@@ -239,7 +261,7 @@ function LinkList() {
       }
       setEditingLink(null);
     } catch (err) {
-      setActionError(err.response?.data?.detail || err.message || 'Failed to save changes');
+      setActionError(friendlyError(err, 'Failed to save changes'));
     } finally {
       setEditSaving(false);
     }
@@ -272,7 +294,7 @@ function LinkList() {
       setProjectMessage('Added to project');
       refetch(); // background refresh, no await needed
     } catch (err) {
-      setProjectMessage(err.response?.data?.detail || err.message || 'Could not add to project');
+      setProjectMessage(friendlyError(err, 'Could not add to project'));
     }
   };
 

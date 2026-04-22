@@ -13,6 +13,8 @@ import { NavBar } from './components/ui/tubelight-navbar.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import { AuthProvider } from './auth/AuthContext.jsx';
 import ProtectedRoute from './auth/ProtectedRoute.jsx';
+import { BackendStatusProvider } from './context/BackendStatusContext.jsx';
+import WakingUpBanner from './components/WakingUpBanner.jsx';
 
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
@@ -24,6 +26,7 @@ const navItems = [
 export function AppLayout() {
   return (
     <div className="min-h-screen bg-[#f7f8f5] text-[#26312d]">
+      <WakingUpBanner />
       <NavBar items={navItems} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -40,9 +43,11 @@ export function AppLayout() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <AppLayout />
-      </BrowserRouter>
+      <BackendStatusProvider>
+        <BrowserRouter>
+          <AppLayout />
+        </BrowserRouter>
+      </BackendStatusProvider>
     </AuthProvider>
   </StrictMode>,
 );
