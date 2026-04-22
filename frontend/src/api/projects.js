@@ -16,8 +16,18 @@ export const addLinkToProject = (projectId, linkId, data = {}) =>
     ...data,
   });
 
-export const addUrlToProject = (projectId, url) =>
-  apiClient.post(`/projects/${projectId}/links/from-url`, { url });
+export const addUrlToProject = (projectId, url, skipAnalysis = false) =>
+  apiClient.post(`/projects/${projectId}/links/from-url${skipAnalysis ? '?skip_analysis=true' : ''}`, { url });
+
+export const addFileToProject = (projectId, file, skipAnalysis = false) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiClient.post(
+    `/projects/${projectId}/links/from-file${skipAnalysis ? '?skip_analysis=true' : ''}`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+};
 
 export const updateProjectLink = (projectId, linkId, updates) =>
   apiClient.patch(`/projects/${projectId}/links/${linkId}`, updates);

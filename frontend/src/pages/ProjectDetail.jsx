@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, ExternalLink, FolderKanban, Link2, Plus, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, FileText, FolderKanban, Link2, Plus, Trash2, Upload, X } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import StatusPicker from '../components/StatusPicker';
 import {
   addUrlToProject,
+  addFileToProject,
   createTask,
   deleteTask,
   getProject,
@@ -39,6 +40,10 @@ export default function ProjectDetail() {
   const [error, setError] = useState(null);
   const [url, setUrl] = useState('');
   const [savingUrl, setSavingUrl] = useState(false);
+  const [skipAI, setSkipAI] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const fileInputRef = useRef(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [taskLinkIds, setTaskLinkIds] = useState([]);
@@ -47,6 +52,12 @@ export default function ProjectDetail() {
   const [pendingRemoval, setPendingRemoval] = useState(null);
   const [pendingTaskDelete, setPendingTaskDelete] = useState(null);
   const [taskComposerLinkId, setTaskComposerLinkId] = useState(null);
+  const [editingLink, setEditingLink] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+  const [editTopics, setEditTopics] = useState([]);
+  const [editKeywords, setEditKeywords] = useState([]);
+  const [editSaving, setEditSaving] = useState(false);
   const [linkedTaskTitle, setLinkedTaskTitle] = useState('');
   const [linkedTaskDescription, setLinkedTaskDescription] = useState('');
   const [creatingLinkedTask, setCreatingLinkedTask] = useState(false);
@@ -73,19 +84,72 @@ export default function ProjectDetail() {
     fetchProject({ showLoading: true });
   }, [fetchProject]);
 
+  const friendlyError = (err, fallback = 'Something went wrong.') => {
+    if (!err.response && err.message?.toLowerCase().includes('network'))
+      return 'Could not reach the server. The backend may be waking up — try again in a moment.';
+    const detail = err.response?.data?.detail || '';
+    if (err.response?.status === 400 && detail.toLowerCase().includes('already exists'))
+      return 'This URL is already in your library.';
+    if (err.response?.status === 400)
+      return 'Invalid URL — make sure it starts with https://.';
+    return detail || fallback;
+  };
+
   const handleAddUrl = async (e) => {
     e.preventDefault();
     if (!url.trim()) return;
-
+    const trimmed = url.trim();
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      setError('Please enter a full URL starting with https://');
+      return;
+    }
     try {
       setSavingUrl(true);
-      await addUrlToProject(projectId, url.trim());
+      setError(null);
+      const res = await addUrlToProject(projectId, trimmed, skipAI);
       setUrl('');
       await fetchProject();
+      if (skipAI) {
+        // open edit modal on the new blank link
+        const newLink = res.data?.link;
+        if (newLink) {
+          setEditingLink(newLink);
+          setEditTitle(newLink.title || '');
+          setEditSummary(newLink.summary || '');
+          setEditTopics([]);
+          setEditKeywords([]);
+        }
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Failed to add URL');
+      setError(friendlyError(err, 'Failed to add URL'));
     } finally {
       setSavingUrl(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      setUploading(true);
+      setUploadError(null);
+      const res = await addFileToProject(projectId, file, skipAI);
+      await fetchProject();
+      if (skipAI) {
+        const newLink = res.data?.link;
+        if (newLink) {
+          setEditingLink(newLink);
+          setEditTitle(newLink.title || '');
+          setEditSummary(newLink.summary || '');
+          setEditTopics([]);
+          setEditKeywords([]);
+        }
+      }
+    } catch (err) {
+      setUploadError(friendlyError(err, 'Failed to upload file.'));
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -109,6 +173,26 @@ export default function ProjectDetail() {
       setError(err.response?.data?.detail || err.message || 'Failed to create task');
     } finally {
       setCreatingTask(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingLink) return;
+    try {
+      setEditSaving(true);
+      const { updateLink } = await import('../api/links');
+      await updateLink(editingLink.id, {
+        title: editTitle,
+        summary: editSummary,
+        topics: editTopics,
+        keywords: editKeywords,
+      });
+      await fetchProject();
+      setEditingLink(null);
+    } catch (err) {
+      setError(friendlyError(err, 'Failed to save changes'));
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -255,23 +339,54 @@ export default function ProjectDetail() {
           <section>
             <div className="rounded-lg border border-[#dfe5df] bg-white p-5 mb-4">
               <h2 className="font-display text-base font-semibold mb-4">Add a link</h2>
+
+              {/* URL input */}
               <form onSubmit={handleAddUrl} className="flex flex-col sm:flex-row gap-2.5">
                 <input
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
-                  disabled={savingUrl}
+                  disabled={savingUrl || uploading}
                   className="flex-1 px-4 py-3 font-mono text-sm border border-[#d8ded8] rounded-md bg-white text-[#26312d] placeholder:text-[#9aa39f] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/30 disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  disabled={savingUrl || !url.trim()}
+                  disabled={savingUrl || uploading || !url.trim()}
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-[#315f56] text-white rounded-md hover:bg-[#244b44] disabled:bg-[#d8ded8] disabled:text-[#7d8984] disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="size-4" />
                   {savingUrl ? 'Saving...' : 'Add'}
                 </button>
               </form>
+
+              {/* Skip AI toggle */}
+              <label className="flex items-center gap-2 mt-3 cursor-pointer select-none justify-end">
+                <span className="font-mono text-[11px] text-[#68746f]">Skip AI — add manually</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={skipAI}
+                  onClick={() => setSkipAI(v => !v)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${skipAI ? 'bg-[#4f8f7a]' : 'bg-[#d8ded8]'}`}
+                >
+                  <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${skipAI ? 'translate-x-4' : 'translate-x-0'}`} />
+                </button>
+              </label>
+
+              {/* File upload */}
+              <input ref={fileInputRef} type="file" accept=".pdf,.txt,.md,.docx" className="hidden" onChange={handleFileUpload} />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || savingUrl}
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-dashed border-[#9cb8aa] text-[#68746f] rounded-md hover:border-[#4f8f7a] hover:text-[#4f8f7a] hover:bg-[#edf4ef] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <Upload className="size-4" />
+                {uploading ? 'Uploading…' : 'Upload a file (PDF, DOCX, TXT, MD)'}
+              </button>
+              {uploadError && (
+                <p className="mt-2 font-mono text-[11px] text-red-400">{uploadError}</p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -301,15 +416,22 @@ export default function ProjectDetail() {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <h3 className="font-display text-sm font-semibold leading-snug mb-2">{link.title || 'Untitled'}</h3>
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all"
-                        >
-                          <ExternalLink className="size-3" />
-                          {link.url}
-                        </a>
+                        {link.source_type === 'file' ? (
+                          <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 break-all">
+                            <FileText className="size-3 flex-shrink-0" />
+                            {link.file_name}
+                          </span>
+                        ) : (
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#4f8f7a]/80 hover:text-[#315f56] break-all"
+                          >
+                            <ExternalLink className="size-3" />
+                            {link.url}
+                          </a>
+                        )}
                       </div>
                       <button
                         onClick={() => setPendingRemoval({
@@ -593,6 +715,60 @@ export default function ProjectDetail() {
         destructive
         onConfirm={handleDeleteTask}
       />
+
+      {/* Edit link modal */}
+      {editingLink && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm" onClick={() => setEditingLink(null)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <p className="font-mono text-[11px] text-[#9aa39f] mb-5 truncate">{editingLink.file_name || editingLink.url}</p>
+            <div className="space-y-4">
+              <div>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Title</label>
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Enter a title…"
+                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Summary</label>
+                <textarea
+                  value={editSummary}
+                  onChange={(e) => setEditSummary(e.target.value)}
+                  placeholder="Write a summary…"
+                  rows={4}
+                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 resize-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Topics (comma separated)</label>
+                <input
+                  value={editTopics.join(', ')}
+                  onChange={(e) => setEditTopics(e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+                  placeholder="e.g. machine-learning, climate"
+                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-[10px] tracking-[0.15em] text-[#9aa39f] uppercase block mb-2">Keywords (comma separated)</label>
+                <input
+                  value={editKeywords.join(', ')}
+                  onChange={(e) => setEditKeywords(e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+                  placeholder="e.g. transformer, attention-mechanism"
+                  className="w-full px-4 py-3 text-sm border border-[#d8ded8] rounded-lg bg-white text-[#26312d] focus:outline-none focus:border-[#8baea0] focus:ring-1 focus:ring-[#8baea0]/20 transition-all"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button onClick={() => setEditingLink(null)} className="flex-1 py-2.5 text-sm text-[#68746f] border border-[#d8ded8] rounded-lg hover:bg-[#f7f8f5] transition-colors">Cancel</button>
+              <button onClick={handleSaveEdit} disabled={editSaving} className="flex-1 py-2.5 text-sm font-semibold bg-[#315f56] text-white rounded-lg hover:bg-[#244b44] disabled:opacity-50 transition-colors">
+                {editSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

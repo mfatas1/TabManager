@@ -898,14 +898,29 @@ def add_link_to_project(
 def add_url_to_project(
     project_id: int,
     link: LinkCreate,
+    skip_analysis: bool = False,
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Save/analyze a URL and add it to a project.
+    Pass skip_analysis=true to save without AI processing.
     """
     get_project_or_404(db, project_id, current_user.id)
-    db_link = get_or_create_analyzed_link(db, link.url, current_user.id)
+
+    if skip_analysis:
+        existing_link = db.query(Link).filter(
+            Link.url == link.url,
+            Link.user_id == current_user.id,
+        ).first()
+        if existing_link:
+            db_link = existing_link
+        else:
+            db_link = Link(url=link.url, user_id=current_user.id)
+            db.add(db_link)
+            db.flush()
+    else:
+        db_link = get_or_create_analyzed_link(db, link.url, current_user.id)
 
     existing = (
         db.query(ProjectLink)
@@ -921,6 +936,66 @@ def add_url_to_project(
     )
     if existing:
         return existing
+
+    project_link = ProjectLink(project_id=project_id, link_id=db_link.id)
+    db.add(project_link)
+    db.commit()
+    db.refresh(project_link)
+    return project_link
+
+
+@app.post("/projects/{project_id}/links/from-file", response_model=ProjectLinkResponse, status_code=201)
+async def add_file_to_project(
+    project_id: int,
+    file: UploadFile = FastAPIFile(...),
+    skip_analysis: bool = False,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Upload a file, analyse it, and add it to a project.
+    """
+    get_project_or_404(db, project_id, current_user.id)
+
+    if file.size and file.size > MAX_FILE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
+    content = await file.read()
+    filename = file.filename or "upload"
+    pseudo_url = f"file://{current_user.id}/{filename}"
+
+    existing_link = db.query(Link).filter(
+        Link.url == pseudo_url,
+        Link.user_id == current_user.id,
+    ).first()
+
+    if existing_link:
+        db_link = existing_link
+    else:
+        db_link = Link(url=pseudo_url, user_id=current_user.id, title=filename,
+                       source_type="file", file_name=filename)
+        db.add(db_link)
+        db.flush()
+
+        if not skip_analysis:
+            mime_type = file.content_type or ""
+            page_text = extract_text_from_file(content, mime_type, filename)
+            if page_text.strip():
+                existing_topics = get_existing_broad_topics(db, current_user.id)
+                summary, specific_tags, broad_tags = analyze_page_with_llm(
+                    url=pseudo_url, title=filename, meta_description=None,
+                    page_text=page_text, existing_topics=existing_topics,
+                )
+                apply_link_analysis(db, db_link, filename, summary, specific_tags, broad_tags)
+
+        db.commit()
+        db.refresh(db_link)
+
+    existing_pl = db.query(ProjectLink).filter(
+        ProjectLink.project_id == project_id,
+        ProjectLink.link_id == db_link.id,
+    ).first()
+    if existing_pl:
+        return existing_pl
 
     project_link = ProjectLink(project_id=project_id, link_id=db_link.id)
     db.add(project_link)
