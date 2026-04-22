@@ -273,10 +273,12 @@ def analyze_page_with_llm(
     meta_description: Optional[str],
     page_text: Optional[str],
     existing_topics: Optional[List[str]] = None,
-) -> Tuple[Optional[str], List[str], List[str]]:
+    is_file: bool = False,
+) -> Tuple[Optional[str], Optional[str], List[str], List[str]]:
     """
     Use OpenAI API to generate a concise summary and two-level semantic tags.
-    Returns (summary, specific_tags, broad_tags) tuple.
+    Returns (title, summary, specific_tags, broad_tags) tuple.
+    When is_file=True the LLM also generates a proper human-readable title.
     - summary: 35-70 words, one paragraph, based on page content
     - specific_tags: 3-5 specific descriptive keywords for display
     - broad_tags: 1-2 broad topic categories for graph connections
@@ -284,28 +286,38 @@ def analyze_page_with_llm(
     client = get_openai_client()
     if not client:
         logger.warning("OpenAI client not available. Falling back to meta description.")
-        return (fallback_summary(title, meta_description, page_text), [], [])
-    
+        return (title, fallback_summary(title, meta_description, page_text), [], [])
+
     if not title and not meta_description and not page_text:
         logger.warning("No page content available for summary or tag extraction.")
-        return (None, [], [])
-    
+        return (title, None, [], [])
+
     try:
         topic_options = existing_topics or []
         existing_topics_text = ", ".join(topic_options) if topic_options else "None yet"
 
-        prompt = f"""Analyze the saved webpage below and return a compact JSON object.
+        title_instruction = ""
+        title_schema = ""
+        if is_file:
+            title_instruction = """1. Write "title": a concise, human-readable title for this document (not the filename).
+   - 3-10 words, title case.
+   - Capture what the document is actually about, not just its name.
+   - Examples: "Q3 2024 Financial Report", "Introduction to Transformer Architectures", "Meeting Notes: Product Roadmap Review"
+"""
+            title_schema = '"title": "Human-readable document title", '
+
+        prompt = f"""Analyze the saved {'document' if is_file else 'webpage'} below and return a compact JSON object.
 
 Your job:
-1. Write "summary": a concise, insightful summary of the actual page content.
-2. Write "specific": 3-5 narrow keyword tags useful for recognizing this exact link.
-3. Write "broad": 1-2 broad topic tags useful for clustering related links in a graph.
+{title_instruction}{'2' if is_file else '1'}. Write "summary": a concise, insightful summary of the actual {'document' if is_file else 'page'} content.
+{'3' if is_file else '2'}. Write "specific": 3-5 narrow keyword tags useful for recognizing this exact {'document' if is_file else 'link'}.
+{'4' if is_file else '3'}. Write "broad": 1-2 broad topic tags useful for clustering related {'documents' if is_file else 'links'} in a graph.
 
 Summary rules:
 - 35-70 words.
 - One paragraph only.
 - Plain, specific language.
-- Explain what the page is about and why it may be useful.
+- Explain what the {'document' if is_file else 'page'} is about and why it may be useful.
 - Do not mention "the article", "the page", or "this link" unless unavoidable.
 - Do not invent details that are not supported by the provided content.
 - If the content is sparse, summarize only what can be confidently inferred.
@@ -331,25 +343,24 @@ General tag rules:
 - Avoid generic tags like "article", "website", "news", or "blog".
 
 Return only valid JSON in this exact shape:
-{{"summary": "35-70 word summary", "specific": ["tag-one"], "broad": ["tag-two"]}}
+{{{title_schema}"summary": "35-70 word summary", "specific": ["tag-one"], "broad": ["tag-two"]}}
 
 Existing broad topics for this user's library:
 {existing_topics_text}
 
-URL: {url}
-Title: {title or 'N/A'}
-Meta description: {meta_description or 'N/A'}
-Extracted page content:
-{page_text or 'N/A'}"""
+{'Filename' if is_file else 'URL'}: {title if is_file else url}
+{'Content' if is_file else 'Title'}: {title if not is_file else (page_text or 'N/A')[:6000]}
+{'' if is_file else f'Meta description: {meta_description or chr(78) + chr(47) + chr(65)}'}
+{'' if is_file else f'Extracted page content:{chr(10)}{page_text or chr(78) + chr(47) + chr(65)}'}"""
 
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": "You summarize saved webpages for a personal knowledge manager. Always return only valid JSON matching the requested schema."},
+                {"role": "system", "content": f"You summarize saved {'documents' if is_file else 'webpages'} for a personal knowledge manager. Always return only valid JSON matching the requested schema."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=350,
+            max_tokens=400,
             response_format={"type": "json_object"},
         )
         
@@ -373,6 +384,11 @@ Extracted page content:
             if generated_summary:
                 generated_summary = re.sub(r"\s+", " ", str(generated_summary)).strip()
 
+            # For files the LLM also returns a human-readable title
+            generated_title = title
+            if is_file and result.get("title"):
+                generated_title = re.sub(r"\s+", " ", str(result["title"])).strip() or title
+
             if "specific" in result and isinstance(result["specific"], list):
                 specific_tags = [normalize_tag(tag) for tag in result["specific"] if tag]
             if "broad" in result and isinstance(result["broad"], list):
@@ -382,25 +398,27 @@ Extracted page content:
             broad_tags = [tag for tag in broad_tags if tag][:2]
             if not broad_tags:
                 broad_tags = ["general-knowledge"]
-            
+
+            logger.info(f"✓ Generated title: {generated_title}")
             logger.info(f"✓ Generated summary: {generated_summary}")
             logger.info(f"✓ Generated {len(specific_tags)} specific tags: {specific_tags}")
             logger.info(f"✓ Generated {len(broad_tags)} broad tags: {broad_tags}")
             return (
+                generated_title,
                 generated_summary or fallback_summary(title, meta_description, page_text),
                 specific_tags,
                 broad_tags,
             )
         else:
             logger.warning(f"Unexpected response format: {result}")
-            return (fallback_summary(title, meta_description, page_text), [], [])
-            
+            return (title, fallback_summary(title, meta_description, page_text), [], [])
+
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON response: {e}. Response: {content}")
-        return (fallback_summary(title, meta_description, page_text), [], [])
+        return (title, fallback_summary(title, meta_description, page_text), [], [])
     except Exception as e:
         logger.error(f"Error calling OpenAI API: {e}")
-        return (fallback_summary(title, meta_description, page_text), [], [])
+        return (title, fallback_summary(title, meta_description, page_text), [], [])
 
 
 SCRAPE_HEADERS = {
@@ -508,12 +526,13 @@ def scrape_url(
         return (None, None, [], [])
 
     # --- LLM analysis ---
-    summary, specific_tags, broad_tags = analyze_page_with_llm(
+    title, summary, specific_tags, broad_tags = analyze_page_with_llm(
         url=url,
         title=title,
         meta_description=meta_description,
         page_text=page_text,
         existing_topics=existing_topics,
+        is_file=False,
     )
 
     return (title, summary, specific_tags, broad_tags)
@@ -1052,11 +1071,12 @@ async def add_file_to_project(
             page_text = extract_text_from_file(content, mime_type, filename)
             if page_text.strip():
                 existing_topics = get_existing_broad_topics(db, current_user.id)
-                summary, specific_tags, broad_tags = analyze_page_with_llm(
+                generated_title, summary, specific_tags, broad_tags = analyze_page_with_llm(
                     url=pseudo_url, title=filename, meta_description=None,
                     page_text=page_text, existing_topics=existing_topics,
+                    is_file=True,
                 )
-                apply_link_analysis(db, db_link, filename, summary, specific_tags, broad_tags)
+                apply_link_analysis(db, db_link, generated_title or filename, summary, specific_tags, broad_tags)
 
         db.commit()
         db.refresh(db_link)
@@ -1264,14 +1284,15 @@ async def upload_file(
 
     db.flush()
     existing_topics = get_existing_broad_topics(db, current_user.id)
-    summary, specific_tags, broad_tags = analyze_page_with_llm(
+    generated_title, summary, specific_tags, broad_tags = analyze_page_with_llm(
         url=pseudo_url,
         title=filename,
         meta_description=None,
         page_text=page_text,
         existing_topics=existing_topics,
+        is_file=True,
     )
-    apply_link_analysis(db, db_link, filename, summary, specific_tags, broad_tags)
+    apply_link_analysis(db, db_link, generated_title or filename, summary, specific_tags, broad_tags)
     db.commit()
     db.refresh(db_link)
     return db_link
