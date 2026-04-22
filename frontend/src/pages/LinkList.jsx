@@ -204,11 +204,21 @@ function LinkList() {
       setSubmitting(true);
       setSubmitError(null);
       setSubmitSuccess(false);
-      await saveLink(trimmed, skipAI);
+      const res = await saveLink(trimmed, skipAI);
       setUrl('');
-      setSubmitSuccess(true);
       await refetch();
-      setTimeout(() => setSubmitSuccess(false), 2000);
+      if (skipAI) {
+        // Open the editor immediately on the blank saved link
+        const newLink = res.data;
+        setEditingLink(newLink);
+        setEditTitle(newLink.title || '');
+        setEditSummary(newLink.summary || '');
+        setEditTopics([]);
+        setEditKeywords([]);
+      } else {
+        setSubmitSuccess(true);
+        setTimeout(() => setSubmitSuccess(false), 2000);
+      }
     } catch (err) {
       setSubmitError(friendlyError(err, 'Failed to save link. Please try again.'));
     } finally {
@@ -224,10 +234,19 @@ function LinkList() {
       setUploading(true);
       setUploadError(null);
       setUploadSuccess(false);
-      await uploadFile(file, skipAI);
-      setUploadSuccess(true);
+      const res = await uploadFile(file, skipAI);
       await refetch();
-      setTimeout(() => setUploadSuccess(false), 2000);
+      if (skipAI) {
+        const newLink = res.data;
+        setEditingLink(newLink);
+        setEditTitle(newLink.title || '');
+        setEditSummary(newLink.summary || '');
+        setEditTopics([]);
+        setEditKeywords([]);
+      } else {
+        setUploadSuccess(true);
+        setTimeout(() => setUploadSuccess(false), 2000);
+      }
     } catch (err) {
       setUploadError(friendlyError(err, 'Failed to upload file. Please try again.'));
     } finally {
